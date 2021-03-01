@@ -4,9 +4,6 @@ from fuzzywuzzy import process
 import datetime
 import re
 
-sx_data = pd.read_excel('D:\\Shweta\\Surgery\\1179 Breast Sx Cases 2010 Till 2020  - Updated 19-01-2021   Sheet.xlsx')
-sx_images_dt = os.listdir('D:\\Shweta\\Surgery\\Date_Wise_Files\\')
-
 
 def find_date(sx_df, dt_str = 'Sx Date'):
     dts = []
@@ -44,6 +41,8 @@ def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str 
                 os.rename(source, destination)
 
 
+sx_data = pd.read_excel('D:\\Shweta\\Surgery\\1179 Breast Sx Cases 2010 Till 2020  - Updated 19-01-2021   Sheet.xlsx')
+sx_images_dt = os.listdir('D:\\Shweta\\Surgery\\Date_Wise_Files\\')
 matched_dates_and_names = match_the_dates('D:\\Shweta\\Surgery\\Date_Wise_Files\\', sx_data, sx_images_dt, dt_str = 'Sx Date', sx_name_str = 'Name ')
 
 
