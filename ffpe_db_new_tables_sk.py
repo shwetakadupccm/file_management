@@ -14,7 +14,7 @@ TABLE_DICT = {'block_information': 'primary',
 
 
 table_types_site = {'type': ['primary', 'review'],
-                    'site': ['breast', 'node','other']}
+                    'site': ['breast', 'node']}
 
 
 def generate_pk(df):
@@ -72,17 +72,25 @@ def add_old_data_new_cols(df, map_df, new_cols):
 def get_mapped_df():
     df, mapping = get_input_data()
     tables = list(TABLE_DICT.keys())
-    writer = pd.ExcelWriter('D:\\Shweta\\Blocks_updated_data\\output_files\\ffpe_new_tables.xlsx', engine = 'xlsxwriter')
+    table_values = TABLE_DICT.values()
+    types = table_types_site.get('type')
+    sites = table_types_site.get('site')
+    writer = pd.ExcelWriter('D:\\Shweta\\Blocks_updated_data\\output_files\\ffpe_new_tables_type_site.xlsx', engine = 'xlsxwriter')
     for table in tables:
-        map_df, new_cols = get_table_map(mapping, table)
-        df_mapped = add_old_data_new_cols(df, map_df, new_cols)
-        df_mapped.to_excel(writer, sheet_name=table, index=False)
-        #print(table)
-        #print(df_mapped.columns)
+        table_df = pd.DataFrame()
+        for type in types:
+            for site in sites:
+                if type in table_values:
+                    map_df, new_cols = get_table_map(mapping, table)
+                    df_mapped = add_old_data_new_cols(df, map_df, new_cols)
+                    df_mapped['type'] = type
+                    df_mapped['site'] = site
+                    df_mapped['fk'] = add_fk(df_mapped, 'fk')
+                    table_df = table_df.append(df_mapped, ignore_index=True)
+        table_df.to_excel(writer, sheet_name=table, index=False)
+        print(table)
+        print(table_df.columns)
     writer.save()
-
-
-
 
 
 if '__name__' == '__main__':
