@@ -53,7 +53,8 @@ source_file = pd.read_excel(source_path)
 test_file = pd.read_excel(test_path)
 
 matched_names, source_clean_names, test_clean_names =find_matched_name_file_num(source_file, test_file, source_name_str='patient_name',
-                  test_name_str='Patient Name', source_file_str='file_number', test_file_str='File_Number')
+                  test_name_str='Patient Name', source_file_str='file_number', test_file_str='File_Number'
+)
 
 matched_names.to_excel(os.path.join(folder, '25_02_2021_names_file_number_score_token_set.xlsx'), index=False)
 
