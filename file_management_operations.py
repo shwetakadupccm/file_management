@@ -7,7 +7,6 @@ import pandas as pd
 # SOURCE_FOLDER = r"D:\Shweta\Histopath_Reports 2019_05"
 # REPORTS = pd.read_excel(r"D:\Shweta\Histopath_Reports 2019_05\reports_file_numbers.xlsx")
 
-
 class FileManagement:
 
     def __init__(self, source_path, destination_path):

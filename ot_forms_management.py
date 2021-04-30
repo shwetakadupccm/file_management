@@ -1,10 +1,35 @@
 import pandas as pd
 import os
+import re
+import datetime
+import shutil
 from fuzzywuzzy import process
 import datetime
 import dateparser
-import re
 
+
+def create_date_dir_move_file(source_path, destination_path, suffix, start_dt):
+    files = os.listdir(source_path)
+    for file in files:
+        if file.endswith(suffix):
+            match = re.search('\d{4}-\d{2}-\d{2}', file)
+            dt = datetime.datetime.strptime(match.group(), '%Y-%m-%d').date()
+            start_date = datetime.datetime.strptime(start_dt, '%Y-%m-%d').date()
+            if dt > start_date:
+                dt_path = os.path.join(destination_path, str(dt))
+                if not os.path.isdir(dt_path):
+                    os.mkdir(dt_path)
+                if not os.path.isfile(os.path.join(dt_path, file)):
+                    shutil.move(os.path.join(source_path, file), dt_path)
+
+
+source_path = 'D:\\ot_images_2021_27_04_sk\\WhatsApp Chat - OT JNH Dr Koppiker'
+destination_path = 'D:\\ot_images_2021_27_04_sk\\Jehangir_OT_data_date_wise_and_patient_names_till_09_03_2021_sk'
+
+
+create_date_dir_move_file(source_path, destination_path, suffix='.jpg', start_dt='2021-03-09')
+
+##
 
 def find_date(sx_df, dt_str = 'Sx Date'):
     dts = []
@@ -68,9 +93,6 @@ def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str 
                 destination = os.path.join(path, new_name)
                 os.rename(source, destination)
 
-sx_data = pd.read_excel('D:\\Shweta\\Surgery\\Surgery list 2021.xlsx')
-sx_images_dt = os.listdir('D:\\ot_images_2021_27_04_sk\\Jehangir_OT_data_date_wise_and_patient_names_till_09_03_2021_sk')
 
-matched_dates_and_names = match_the_dates('D:\\ot_images_2021_27_04_sk\\Jehangir_OT_data_date_wise_and_patient_names_till_09_03_2021_sk',
-                                          sx_data, sx_images_dt, dt_str = 'Date', sx_name_str = 'Patient Name')
+
 
