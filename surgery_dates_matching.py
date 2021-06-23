@@ -68,9 +68,9 @@ def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str 
                 destination = os.path.join(path, new_name)
                 os.rename(source, destination)
 
-sx_data = pd.read_excel('D:\\Shweta\\Surgery\\Surgery list 2021.xlsx')
-sx_images_dt = os.listdir('D:\\ot_images_2021_27_04_sk\\Jehangir_OT_data_date_wise_and_patient_names_till_09_03_2021_sk')
+sx_data = pd.read_excel('D:\\Shweta\\Surgery\\Surgery list 2021_sk.xlsx')
+sx_images_dt = os.listdir('D:\\2021_06_14_renamed')
 
-matched_dates_and_names = match_the_dates('D:\\ot_images_2021_27_04_sk\\Jehangir_OT_data_date_wise_and_patient_names_till_09_03_2021_sk',
+matched_dates_and_names = match_the_dates('D:\\2021_06_14_renamed',
                                           sx_data, sx_images_dt, dt_str = 'Date', sx_name_str = 'Patient Name')
 

@@ -1,9 +1,9 @@
 import pandas as pd
 import re
 import os
-from fuzzywuzzy import process
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import process, fuzz
 import numpy as np
+
 
 def clean_names(df, name_str):
     cleaned_names = []
