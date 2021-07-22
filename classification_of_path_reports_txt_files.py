@@ -305,3 +305,6 @@ reports_name_treatment = read_file_text(folder_path, string = 'treatment')
 
 reports_name_fibrosis = read_file_text(folder_path, pdf_path, destination_path = 'D:\\Shweta\\path_reports\\2021_07_07_fibrosis_path_reports_sk', string = 'fibrosis')
 reports_name_fibrosis.to_excel('D:\\Shweta\\path_reports\\2021_07_06_fibrosis_reports_names_sk.xlsx', index=False)
+
+##
+
