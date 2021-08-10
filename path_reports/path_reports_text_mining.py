@@ -7,8 +7,6 @@ import datetime
 
 folder_path = 'D:\\Shweta\\path_reports\\Jehangir_Surgery_Path_Reports\\2021_06_07_Jehangir_path_reports_txt'
 file_path = 'D:\\Shweta\\path_reports\\Jehangir_Surgery_Path_Reports\\2021_06_07_Jehangir_path_reports_txt\\Miss_LATA_MOHITE_-_H.txt'
-file_name = 'Miss_LATA_MOHITE_-_H1.txt'
-file_name1 = 'Ms_LATA_MOHITE_-_H1.txt'
 
 def get_report_text_into_list(file_path):
     file = open(file_path, 'rt')
@@ -116,8 +114,11 @@ def read_file_info_from_report(folder_path, date_str = 'sc date', keyword1 = 'ch
     output_df['key_word_info_1'] = keyword_info_1
     output_df['keyword_2'] = keyword_2
     output_df['key_word_info_2'] = keyword_info_2
-    final_output_df = output_df.loc[output_df['report_name'] != 'not_applicable']
-    return final_output_df
+    return output_df
 
 output_df = read_file_info_from_report(folder_path, date_str = 'sc date', keyword1 = 'chemotherapy', keyword2 = ['recur', 'ovar'])
-output_df.to_excel('D:\\Shweta\\path_reports\\2021_09_07_chemo_info_sk.xlsx', index=False)
+output_df.to_excel('D:\\Shweta\\path_reports\\2021_28_07_chemo_recu_info_sk.xlsx', index=False)
+
+output_df1 = read_file_info_from_report(folder_path, date_str = 'sc date', keyword1 = 'tils', keyword2 = ['residual cancer burden'])
+output_df1.to_excel('D:\\Shweta\\path_reports\\2021_28_07_tumour_tils_residual_cancer_info_1_sk.xlsx', index=False)
+

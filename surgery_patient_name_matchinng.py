@@ -25,7 +25,6 @@ def clean_names(df, name_str):
         cleaned_names.append(name)
     return cleaned_names
 
-
 def find_date(sx_df, dt_str):
     dts = []
     for sx_dt in sx_df[dt_str]:

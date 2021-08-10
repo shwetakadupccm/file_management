@@ -5,7 +5,6 @@ import datetime
 import dateparser
 import re
 
-
 def find_date(sx_df, dt_str = 'Sx Date'):
     dts = []
     for sx_dt in sx_df[dt_str]:

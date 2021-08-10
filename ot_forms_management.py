@@ -7,7 +7,6 @@ from fuzzywuzzy import process
 import datetime
 import dateparser
 
-
 def create_date_dir_move_file(source_path, destination_path, suffix, start_dt):
     files = os.listdir(source_path)
     for file in files:
@@ -23,9 +22,10 @@ def create_date_dir_move_file(source_path, destination_path, suffix, start_dt):
                     shutil.move(os.path.join(source_path, file), dt_path)
 
 
-source_path = 'D:\\ot_images_2021_27_04_sk\\WhatsApp Chat - OT JNH Dr Koppiker'
-destination_path = 'D:\\ot_images_2021_27_04_sk\\Jehangir_OT_data_date_wise_and_patient_names_till_09_03_2021_sk'
+source_path = 'D:\\Shweta\\ot_notes\\2021_08_02'
+destination_path = 'D:\\Shweta\\ot_notes\\2021_08_02_ot\\ot_notes_date_wise'
 
+create_date_dir_move_file(source_path, destination_path, suffix = '.jpg', start_dt = '2021-06-14')
 
 create_date_dir_move_file(source_path, destination_path, suffix='.jpg', start_dt='2021-03-09')
 
@@ -41,7 +41,6 @@ def find_date(sx_df, dt_str = 'Sx Date'):
         else:
             dts.append(sx_dt)
     return dts
-
 
 def convert_all_dates_into_one_format(dates):
     dts = []
@@ -94,4 +93,7 @@ def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str 
                 os.rename(source, destination)
 
 
+sx_images_dts = os.listdir(destination_path)
+sx_df = pd.read_excel('D:\\Shweta\\Surgery\\Surgery list 2021_03_08.xlsx')
+match_the_dates(destination_path, sx_df, sx_images_dts, dt_str = 'Date', sx_name_str = 'Patient Name')
 
