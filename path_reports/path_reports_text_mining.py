@@ -41,8 +41,6 @@ def get_patient_name_from_report(report_text_list, file_name):
     if patient_name is not None:
         return cleaned_file_name[0]
 
-patient_name1 = get_patient_name_from_report(report_text, file_name)
-
 def get_tagged_date(report_text_lst, tag_str = 'sc date'):
     try:
         sc_date_name_index = report_text_lst.index(tag_str)

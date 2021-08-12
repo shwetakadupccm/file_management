@@ -88,23 +88,6 @@ output_df.to_excel('D:\\Shweta\\path_reports\\output_df_sx_path_reports\\2021_03
 output_df.to_excel('D:\\Shweta\\path_reports\\output_df_sx_path_reports\\2021_02_08_chemo_residual_info_from_pdf_reports.xlsx',
                    index=False)
 
-# np.savetxt('D:\\Shweta\\path_reports\\output_df_sx_path_reports\\2021_02_08_text.txt', text1)
 
 # name_initials = ['mr', 'mrs', 'ms', 'miss']
 
-for line in text1:
-    line = line.lower()
-    # print(line)
-    if any(x in line for x in name_initials):
-        print(line)
-    else:
-        print('not_found')
-
-str1 = 'chemo'
-for line in text1:
-    if str1 in line:
-        print(line)
-    else:
-        print('not_found')
-
-##
