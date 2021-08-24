@@ -1,0 +1,11 @@
+#!/bin/bash
+DIR = "\mnt\d\WorkDocs\OneDrive\Prashanti_Data_from_Documnets\surgery_reports\Golwilkar_lab_reports\Jehangir_Surgery_Reports"\\or f  in $DIR; do
+	if [[ $f =~ .pdf ]]; then do
+	test = 	$f.txt
+	pdftotext -f 1 -nopgbrk $f test; 
+	echo $f; 
+	echo test.txt;
+	else echo 'file not pdf';
+	fi
+echo 'bash file executed'
+done
