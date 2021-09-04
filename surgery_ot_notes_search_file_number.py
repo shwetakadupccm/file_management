@@ -6,7 +6,6 @@ from fuzzywuzzy import fuzz, process
 ot_notes_df = pd.read_excel('D:\\Shweta\\surgery_ot_notes\\PCCM_Surgery_OT notes_10-03-2021_RB_RU_DA.xlsx')
 master_file = pd.read_excel('D:\\Shweta\\Patient_name_matching\\master_list\\2010_2018_name_file_number_whole.xlsx')
 
-
 ot_notes_df['full_name'] = ot_notes_df[ot_notes_df.columns[1:4]].apply(
     lambda x: ' '.join(x.dropna().astype(str)), axis = 1)
 

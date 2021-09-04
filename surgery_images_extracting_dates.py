@@ -39,13 +39,11 @@ def split_dir_path(df, dir_path_name_str = 'directory_path',
         output_df.insert(0, 'info_from_brackets', bracket_info_lst)
     return output_df
 
-
 output_df = split_dir_path(df, dir_path_name_str = 'directory_path',
                    parent_folder_path = 'Y:\\RESEARCH\\RESEARCH-TEAM\\Smita Sister\\All surgical images\\2014-June2019\\',
                    substring = '\\')
 
 final_df = pd.concat([df, output_df], axis=1)
-
 final_df.to_excel('D:\\Shweta\\surgery_images_ss\\output_df\\2021_06_25_sub_dirs(2014-2019)_sk.xlsx', index=False)
 
 ##
@@ -54,7 +52,6 @@ output_df1 = split_dir_path(df1, dir_path_name_str = 'directory_path',
                    substring = '\\')
 
 final_df1 = pd.concat([df1, output_df1], axis=1)
-
 final_df1.to_excel('D:\\Shweta\\surgery_images_ss\\output_df\\2021_06_25_sub_dirs(2019)_sk.xlsx', index=False)
 ##
 def split_dir_path_for_2021(df, dir_path_name_str = 'directory_path',

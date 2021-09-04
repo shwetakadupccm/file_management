@@ -95,4 +95,101 @@ def find_file_num_from_master_list(source_file, test_file, source_name_str='pati
 matched_names_file_num = find_file_num_from_master_list(master_file,test_file,source_name_str='patient_name', source_file_str = 'file_number',
                                    test_name_str='736 Breast surgery by Dr. koppiker 2010-2018')
 
-matched_names_file_num.to_excel(os.path.join(folder, '2021_02_03_matched_names_file_number_all_sk.xlsx'))
+matched_names_file_num.to_excel(os.path.join(folder, '2021_02_03_matched_names_file_number_all_sk.xlsx'))4
+
+### extracting file numbers for surgery data(dy)
+
+sx_data_ss = pd.read_excel('D:\\Shweta\\Patient_name_matching\\surgery_patient_names_matching_dy\\Sx_data_2018_2019_comparison_sheet_2021_09_03.xlsx',
+                           sheet_name='Sx data for 2018-19_Shahin')
+
+sx_data_dy = pd.read_excel('D:\\Shweta\\Patient_name_matching\\surgery_patient_names_matching_dy\\Sx_data_2018_2019_comparison_sheet_2021_09_03.xlsx',
+                           sheet_name='Sx_data_2018-19_')
+
+
+def find_file_num_from_shahins_data(source_file, test_file, source_name_str = 'Patient Names', test_file_str = 'file_number',
+                                   test_name_str='patient_name', source_dt_str = 'Sx Date', test_dt_str = 'Surgery date'):
+    source_clean_names = clean_names(source_file, source_name_str)
+    test_clean_names = clean_names(test_file, test_name_str)
+    matched_list = []
+    for index, name in enumerate(test_clean_names):
+        matched_name = process.extractOne(query=name, choices=source_clean_names,
+                                           scorer=fuzz.token_set_ratio)
+        if matched_name is not None:
+            test_cols = [test_name_str, test_dt_str, test_file_str]
+            test_dat = test_file.iloc[index][test_cols]
+            source_cols = [source_name_str, source_dt_str]
+            source_index = source_clean_names.index(matched_name[0])
+            source_dat = source_file.iloc[source_index][source_cols]
+            score = matched_name[1]
+            output_dat = np.append(test_dat, source_dat)
+            final_output_list = np.append(output_dat, score)
+            matched_list.append(final_output_list)
+            matched_df = pd.DataFrame(matched_list, columns=[test_name_str, test_dt_str, test_file_str, source_name_str,
+                                                              source_dt_str, 'score'])
+            #matched_df['comparison'] = np.where(matched_df[test_dt_str] == matched_df[surgery_dt_str], True, False)
+    return matched_df
+
+# def find_file_num_from_shahins_data_and_dikshas_data(source_file, test_file, source_name_str = 'Patient Names', test_file_str = 'file_number',
+#                                    test_name_str='patient_name', source_dt_str = 'Sx Date', test_dt_str = 'Surgery date'):
+#     source_clean_names = clean_names(source_file, source_name_str)
+#     test_clean_names = clean_names(test_file, test_name_str)
+#     matched_list = []
+#     not_matched_list = []
+#     for index, name in enumerate(test_clean_names):
+#         matched_name = process.extractOne(query=name, choices=source_clean_names,
+#                                            scorer=fuzz.token_set_ratio)
+#         if matched_name is not None:
+#             test_cols = [test_name_str, test_dt_str, test_file_str]
+#             test_dat = test_file.iloc[index][test_cols]
+#             source_cols = [source_name_str, source_dt_str]
+#             source_index = source_clean_names.index(matched_name[0])
+#             source_dat = source_file.iloc[source_index][source_cols]
+#             score = matched_name[1]
+#             output_dat = np.append(test_dat, source_dat)
+#             final_output_list = np.append(output_dat, score)
+#             matched_list.append(final_output_list)
+#             # matched_df = pd.DataFrame(matched_list, columns=[test_name_str, test_dt_str, test_file_str, source_name_str,
+#             #                                                   source_dt_str, 'score'])
+#             #matched_df['comparison'] = np.where(matched_df[test_dt_str] == matched_df[surgery_dt_str], True, False)
+#         else:
+#             test_cols_not_matched = [test_name_str, test_dt_str, test_file_str]
+#             test_dat_not_matched = test_file.iloc[index][test_cols_not_matched]
+#             not_matched_list.append(test_dat_not_matched)
+#     matched_df = pd.DataFrame(matched_list, columns=[test_name_str, test_dt_str, test_file_str, source_name_str,
+#                                                      source_dt_str, 'score'])
+#     not_matched_df = pd.DataFrame(not_matched_list,
+#                                     columns=[test_name_str, test_dt_str, test_file_str])
+#     return matched_df, not_matched_df
+#
+# matched_df, not_matched_df = find_file_num_from_shahins_data_and_dikshas_data(sx_data_dy, sx_data_ss, source_name_str = 'Patient Names', test_file_str = 'file_number',
+#                                    test_name_str='patient_name', source_dt_str = 'Sx Date', test_dt_str = 'Surgery date')
+#
+
+def find_file_num_from_shahins_data(source_file, test_file, source_name_str = 'Patient Names', source_file_str = 'file_number',
+                                   test_name_str='patient_name', source_dt_str = 'Sx Date', test_dt_str = 'Surgery date'):
+    source_clean_names = clean_names(source_file, source_name_str)
+    test_clean_names = clean_names(test_file, test_name_str)
+    matched_list = []
+    for index, name in enumerate(test_clean_names):
+        matched_name = process.extractOne(query=name, choices=source_clean_names,
+                                           scorer=fuzz.token_set_ratio)
+        if matched_name is not None:
+            test_cols = [test_name_str, test_dt_str]
+            test_dat = test_file.iloc[index][test_cols]
+            source_cols = [source_name_str, source_dt_str, source_file_str]
+            source_index = source_clean_names.index(matched_name[0])
+            source_dat = source_file.iloc[source_index][source_cols]
+            score = matched_name[1]
+            output_dat = np.append(test_dat, source_dat)
+            final_output_list = np.append(output_dat, score)
+            matched_list.append(final_output_list)
+            matched_df = pd.DataFrame(matched_list, columns=[test_name_str, test_dt_str, source_name_str,
+                                                              source_dt_str, source_file_str, 'score'])
+            #matched_df['comparison'] = np.where(matched_df[test_dt_str] == matched_df[surgery_dt_str], True, False)
+    return matched_df
+
+matched_df_dy = find_file_num_from_shahins_data(sx_data_ss, sx_data_dy, source_name_str = 'patient_name', source_file_str = 'file_number',
+                                   test_name_str='Patient Names', source_dt_str = 'Surgery date', test_dt_str = 'Sx Date')
+
+matched_df_dy.to_excel('D:\\Shweta\\Patient_name_matching\\surgery_patient_names_matching_dy\\2021_09_03_matched_patient_names_file_number_from_dy_sk.xlsx',
+                    index=False)

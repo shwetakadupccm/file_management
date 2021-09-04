@@ -2,8 +2,8 @@ import pandas as pd
 import tabula
 import os
 import pytesseract as pt
+import cv2
 import itertools
-import camelot
 from PIL import Image
 
 pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
@@ -13,8 +13,8 @@ output_path = 'D:/Shweta/path_reports/Histopath_reports_from_server/Biopsy/bx_im
 file_name = '06_20_Bx.pdf'
 img_name = '06_20_bx_1.jpg'
 
-table_df = tabula.read_pdf(os.path.join(pdf_folder_path, file_name), pages = 'all', multiple_tables=True,
-                            stream=True, guess=False, encoding="utf-8")
+# table_df = tabula.read_pdf(os.path.join(pdf_folder_path, file_name), pages = 'all', multiple_tables=True,
+#                             stream=True, guess=False, encoding="utf-8")
 
 # tabula.convert_into(os.path.join(pdf_folder_path, file_name), os.path.join(pdf_folder_path, "output.csv"),
 #                     output_format="csv", pages='all')
@@ -60,3 +60,16 @@ def ImagetoXls(path, output_path):
                 writer.close()
 
 ImagetoXls(folder_path, output_path)
+
+##
+img = cv2.imread(os.path.join(folder_path, img_name))
+d = pt.image_to_data(img, output_type=pt.Output.DICT)
+
+n_boxes = len(d['level'])
+
+for i in range(n_boxes):
+    (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
+    img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 1)
+
+cv2.imshow('img', img)
+cv2.waitKey(0)
