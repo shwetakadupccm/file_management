@@ -55,7 +55,7 @@ def get_unique_value_from_list(list_with_duplicate_values):
     output_lst = [line for line in unique_list if line]
     return output_lst
 
-text_lst = get_report_text_into_list(os.path.join(txt_folder_path, '110_18_fnac_bx_ihc_3.txt'))
+text_lst = get_report_text_into_list(os.path.join(txt_folder_path, '216_18_bx_ihc_ki67_3.txt'))
 text_df = pd.DataFrame(text_lst)
 unique_text_lst = get_unique_value_from_list(text_lst)
 unique_text_df = pd.DataFrame(unique_text_lst)
@@ -109,8 +109,6 @@ def get_specimen(text_lst, specimen_keyword = 'specimen'):
         if specimen_keyword in line:
             return line
 
-specimen = get_specimen(unique_text_lst, specimen_keyword = 'specimen')
-
 def get_block_id(specimen):
     block_id = re.sub('specimen', '', specimen)
     block_id = re.sub('paraffin', '', block_id)
@@ -126,27 +124,30 @@ def get_block_id(specimen):
     block_id = re.sub('bret', '', block_id)
     block_id = re.sub('lump.', '', block_id)
     block_id = re.sub('right', '', block_id)
+    block_id = re.sub('breast', '', block_id)
     block_id = re.sub('axillary', '', block_id)
     block_id = re.sub('lymph', '', block_id)
     block_id = re.sub('node', '', block_id)
+    block_id = re.sub('trucut', '', block_id)
     block_id = re.sub('biopsy', '', block_id)
+    block_id = re.sub('blopsy-', '', block_id)
+    block_id = re.sub('invasive', '', block_id)
+    block_id = re.sub('invive', '', block_id)
     block_id = re.sub('axill', '', block_id)
     return block_id
 
-block_id = get_block_id(specimen)
-
-def get_ihc_no(text_lst, ihc_keywprd = 'ihc'):
+def get_ihc_no(text_lst, ihc_keywprd = ['ihc', 'i.h.c.']):
     for line in text_lst:
-        if ihc_keywprd in line:
+        if any(x in line for x in ihc_keywprd):
             line_idx = text_lst.index(line)
             ihc_id_txt = text_lst[line_idx]
             ihc_id = re.sub('hp', '', str(ihc_id_txt))
             ihc_id = re.sub('no', '', ihc_id)
+            ihc_id = re.sub('no.', '', ihc_id)
             ihc_id = re.sub('ihc', '', ihc_id)
+            ihc_id = re.sub('i.h.c.', '', ihc_id)
             ihc_id = re.sub(':', '', ihc_id)
             return ihc_id
-
-ihc_no = get_ihc_no(unique_text_lst, 'ihc')
 
 def get_cyto_no(text_lst, cyto_keyword = 'cyto no'):
     for line in text_lst:
@@ -155,8 +156,6 @@ def get_cyto_no(text_lst, cyto_keyword = 'cyto no'):
             cyto_no = re.sub('no.', '', cyto_no)
             cyto_no = re.sub('no', '', cyto_no)
             return cyto_no
-
-cyto_no = get_cyto_no(unique_text_lst, 'cyto no')
 
 def get_diagnosis(text_lst, diagnosis_keyword = 'diagnosis'):
     for line in text_lst:
@@ -213,8 +212,6 @@ def get_er_status(text_lst, er_keyword = 'estrogen'):
                 elif er_status.startswith('nega'):
                     return er_status
 
-er_status = get_er_status(unique_text_lst, 'estrogen')
-
 def get_er_percent(text_lst, er_keyword = 'estrogen'):
     for line in text_lst:
         if er_keyword in line:
@@ -224,8 +221,6 @@ def get_er_percent(text_lst, er_keyword = 'estrogen'):
             proportion = re.search(r"\(([0-9%]+)\)", str(er_txt))
             if proportion is not None:
                 return proportion.group(1)
-
-proportion = get_er_percent(unique_text_lst, 'estrogen')
 
 def get_keyword_info(file_text_lst, keyword = ['positive/negative', 'positive/negatve', 'intensity']):
     keyword_info = []
@@ -272,39 +267,140 @@ def get_pr_percent(text_lst, pr_keyword = 'progesterone'):
 
 pr_proportion = get_pr_percent(unique_text_lst, 'progesterone')
 
-def get_tils_status(text_lst, tils_status_types = ['moderate', 'mild', 'marked']):
+def get_tils_status(text_lst, tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked']):
     for line in text_lst:
-        if any(x in line for x in tils_status_types):
-            split_line = line.split(' ')
-            for word in split_line:
-                if any(x in word for x in tils_status_types):
-                    return word
+        if any(x in line for x in tils_keyword):
+            line_idx = text_lst.index(line)
+            txt = text_lst[line_idx:line_idx+1]
+            txt_str = str(txt)
+            if any(x in txt_str for x in tils_status_types):
+                split_line = line.split(' ')
+                for word in split_line:
+                    if any(x in word for x in tils_status_types):
+                        return word
+
+# tils_statu = get_tils_status(unique_text_lst, tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked'])
 
 def get_her2_status(text_lst, her2_keyword = 'her-2/neu'):
+    unwanted_txt = {'score her-2 protein staining pattern', '1+ negative a weak incomplete membrane staining',
+                    '2+ borderline a weak to moderate complete staining',
+                    '3+ positive a strong complete membrane staining',
+                    'for equivocal cases (2+) fluorescent in-situ hybridization (fish) analysis for her-2 gene amplification',
+                    'c-erbb-2 (her-2/neu) assay', 'in > 30% of tumour cells', 'her-2 protein',
+                    'in < 10% of tumour cells', 'negative no staining or membrane staining'}
+
     for line in text_lst:
         if her2_keyword in line:
             her2_index = text_lst.index(line)
             range_index = her2_index + 14
             her2_txt = text_lst[her2_index:range_index]
-            cleaned_pr_status = re.sub(r'[^a-zA-Z]', ' ', str(her2_txt))
-            cleaned_pr_status = re.sub('negative no staining or membrane staining', '', cleaned_pr_status)
-            cleaned_pr_status = re.sub('negative a weak incomplete membrane staining', '', cleaned_pr_status)
-            cleaned_pr_status = re.sub('borderline a weak to moderate complete staining', '', cleaned_pr_status)
-            cleaned_pr_status = re.sub('positive a strong complete membrane staining', '', cleaned_pr_status)
-            her2_status_spllited = cleaned_pr_status.split(' ')
-            for status in her2_status_spllited:
-                if status.endswith('ive'):
-                    return status
-                elif status.startswith('posi'):
-                    return status
-                elif status.endswith('nega'):
-                    return status
-                elif status.startswith('equ'):
-                    return status
-                elif status.endswith('cal'):
-                    return status
+            her2_txt_cleaned = [txt for txt in her2_txt if txt not in unwanted_txt]
+            for line in her2_txt_cleaned:
+                if 'score' in line:
+                    cleaned_her2_status = re.sub('score', '', line)
+                    # her2_grade = re.sub(r'[^0-9+]', ' ', str(cleaned_her2_status))
+                    # if her2_grade is None:
+                    #     her2_grade = 'not_found'
+                    her2_status_spllited = cleaned_her2_status.split(' ')
+                    for status in her2_status_spllited:
+                        if status.endswith('ive'):
+                            return status
+                        elif status.startswith('posi'):
+                            return status
+                        elif status.endswith('nega'):
+                            return status
+                        elif status.startswith('equ'):
+                            return status
+                        elif status.endswith('cal'):
+                            return status
 
-her2_status = get_her2_status(unique_text_lst, 'her-2/neu')
+her2_status, her2_grade = get_her2_status(unique_text_lst, 'her-2/neu')
+
+def get_her2_grade(text_lst, her2_keyword = 'her-2/neu'):
+    unwanted_txt = {'score her-2 protein staining pattern', '1+ negative a weak incomplete membrane staining',
+                    '2+ borderline a weak to moderate complete staining',
+                    '3+ positive a strong complete membrane staining',
+                    'for equivocal cases (2+) fluorescent in-situ hybridization (fish) analysis for her-2 gene amplification',
+                    'c-erbb-2 (her-2/neu) assay', 'in > 30% of tumour cells', 'her-2 protein',
+                    'in < 10% of tumour cells', 'negative no staining or membrane staining'}
+
+    for line in text_lst:
+        if her2_keyword in line:
+            her2_index = text_lst.index(line)
+            range_index = her2_index + 14
+            her2_txt = text_lst[her2_index:range_index]
+            her2_txt_cleaned = [txt for txt in her2_txt if txt not in unwanted_txt]
+            for line in her2_txt_cleaned:
+                if 'score' in line:
+                    cleaned_her2_status = re.sub('score', '', line)
+                    her2_grade = re.sub(r'[^0-9+]', '', str(cleaned_her2_status))
+                    if her2_grade is not None:
+                        return her2_grade
+                    else:
+                        her2_grade = re.sub(r'[^0-9]', '', str(cleaned_her2_status))
+                        return her2_grade
+
+def get_ki67_status(text_lst, ki67_keyword = 'clone mib-1'):
+    for line in text_lst:
+        if ki67_keyword in line:
+            idx = text_lst.index(line)
+            txt = text_lst[idx]
+            text_lst_str = str(txt)
+            splitted_txt = text_lst_str.split(' ')
+            for value in splitted_txt:
+                if value.endswith('ive'):
+                    return value
+                elif value.startswith('pos'):
+                    return value
+                elif value.startswith('neg'):
+                    return value
+
+ki67_status = get_ki67_status(unique_text_lst)
+
+def get_ki67_percent(text_lst, ki67_keyword = 'clone mib-1'):
+    for line in text_lst:
+        if ki67_keyword in line:
+            idx = text_lst.index(line)
+            txt = text_lst[idx]
+            cleaned_txt = re.sub('ki 67', '', str(txt))
+            cleaned_txt = re.sub('clone mib-1', '', cleaned_txt)
+            cleaned_txt = re.sub(r'[^0-9-%]', '', cleaned_txt)
+            return cleaned_txt
+
+ki67_percent = get_ki67_percent(unique_text_lst, 'clone mib-1')
+
+def get_specimen_of_ki67_report(txt_lst, ki67_specimen_keyword = 'paraffin'):
+    for line in txt_lst:
+        if ki67_specimen_keyword in line:
+            return line
+
+specimen = get_specimen_of_ki67_report(unique_text_lst, ki67_specimen_keyword = 'paraffin')
+
+# def get_her2_status(text_lst, her2_keyword = 'her-2/neu'):
+#     for line in text_lst:
+#         if her2_keyword in line:
+#             her2_index = text_lst.index(line)
+#             range_index = her2_index + 14
+#             her2_txt = text_lst[her2_index:range_index]
+#             cleaned_pr_status = re.sub(r'[^a-zA-Z]', ' ', str(her2_txt))
+#             cleaned_pr_status = re.sub('negative no staining or membrane staining', '', cleaned_pr_status)
+#             cleaned_pr_status = re.sub('negative a weak incomplete membrane staining', '', cleaned_pr_status)
+#             cleaned_pr_status = re.sub('borderline a weak to moderate complete staining', '', cleaned_pr_status)
+#             cleaned_pr_status = re.sub('positive a strong complete membrane staining', '', cleaned_pr_status)
+#             her2_status_spllited = cleaned_pr_status.split(' ')
+#             for status in her2_status_spllited:
+#                 if status.endswith('ive'):
+#                     return status
+#                 elif status.startswith('posi'):
+#                     return status
+#                 elif status.endswith('nega'):
+#                     return status
+#                 elif status.startswith('equ'):
+#                     return status
+#                 elif status.endswith('cal'):
+#                     return status
+
+# her2_status = get_her2_status(unique_text_lst, 'her-2/neu')
 
 # def get_her2_grade(text_lst, her2_keyword = 'her-2/neu'):
 #     for line in text_lst:
@@ -324,22 +420,24 @@ her2_status = get_her2_status(unique_text_lst, 'her-2/neu')
 #                         her2_grade = re.sub('[^0-9+]', '', str(second_line_txt))
 #                         return her2_grade
 
-def get_her2_grade(text_lst, her2_keyword = 'her-2/neu'):
-    unwanted_txt = {'score her-2 protein staining pattern', '1+ negative a weak incomplete membrane staining',
-                    '2+ borderline a weak to moderate complete staining', '3+ positive a strong complete membrane staining',
-                    'for equivocal cases (2+) fluorescent in-situ hybridization (fish) analysis for her-2 gene amplification',
-                    'c-erbb-2 (her-2/neu) assay', 'in > 30% of tumour cells'}
-    for line in text_lst:
-        if her2_keyword in line:
-            her2_index = text_lst.index(line)
-            range_index = her2_index + 14
-            her2_txt = text_lst[her2_index:range_index]
-            # her2_txt = str(her2_txt)
-            her2_txt_cleaned = [txt for txt in her2_txt if txt not in unwanted_txt]
-            her2_grade = re.search('[+()\d-]+', str(her2_txt_cleaned))
-            return her2_grade.group(0)
-
-her2_grade = get_her2_grade(unique_text_lst, 'her-2/neu')
+# def get_her2_grade(text_lst, her2_keyword = 'her-2/neu'):
+#     unwanted_txt = {'score her-2 protein staining pattern', '1+ negative a weak incomplete membrane staining',
+#                     '2+ borderline a weak to moderate complete staining', '3+ positive a strong complete membrane staining',
+#                     'for equivocal cases (2+) fluorescent in-situ hybridization (fish) analysis for her-2 gene amplification',
+#                     'c-erbb-2 (her-2/neu) assay', 'in > 30% of tumour cells', 'her-2 protein', 'in < 10% of tumour cells'}
+#
+#     for line in text_lst:
+#         if her2_keyword in line:
+#             her2_index = text_lst.index(line)
+#             range_index = her2_index + 14
+#             her2_txt = text_lst[her2_index:range_index]
+#             # her2_txt = str(her2_txt)
+#             her2_txt_cleaned = [txt for txt in her2_txt if txt not in unwanted_txt]
+#             her2_txt_no_int = [x for x in her2_txt_cleaned if not x.isdigit()]
+#             her2_grade = re.search('[+()\d-]+', str(her2_txt_no_int))
+#             return her2_grade.group(0)
+#
+# her2_grade = get_her2_grade(unique_text_lst, 'her-2/neu')
 
 # def get_her2_grade(text_lst, her2_keyword = 'her-2/neu'):
 #     for line in text_lst:
@@ -366,7 +464,6 @@ her2_grade = get_her2_grade(unique_text_lst, 'her-2/neu')
 #             print(her2_grade)
 #             return her2_grade.group(0)
 #
-
 
 def classify_report_by_type(text_lst, cytology_keyword = 'cytology', histology_keyword = 'histology',
                             ihc_keyword = 'immunohistochemistry', blood_count_keyword = 'blood count',
@@ -407,10 +504,10 @@ id_data = get_identification_data(unique_text_lst, sid_keyword = 'sid', sample_d
 
 def get_histology_data(file_txt_unique, diagnosis_keyword = 'diagnosis', specimen_keyword = 'specimen',
                        nottingham_grade_keyword = 'nottingham', nottingham_score_keyword = 'nottingham',
-                       tils_status_types = ['moderate', 'mild', 'marked']):
+                       tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked']):
     specimen = get_specimen(file_txt_unique, specimen_keyword)
     diagnosis = get_diagnosis(file_txt_unique, diagnosis_keyword)
-    tils_status = get_tils_status(file_txt_unique, tils_status_types)
+    tils_status = get_tils_status(file_txt_unique, tils_keyword, tils_status_types)
     grade = get_notthingham_grade(file_txt_unique, nottingham_grade_keyword)
     score = get_notthingham_score(file_txt_unique, nottingham_score_keyword)
     histo_data = [specimen, diagnosis, grade, score, tils_status]
@@ -440,19 +537,40 @@ def get_ihc_data(file_txt_unique, specimen_keyword = 'specimen', er_keyword = 'e
     ihc_data_list = [specimen_info, block_id, ihc_no, er_status, er_percent, pr_status, pr_percent, her2_status, her2_grade]
     return ihc_data_list
 
+def get_ki67_data(file_txt_unique, ki67_keyword = 'clone mib-1', ki67_specimen_keyword = 'paraffin',
+                  ihc_keyword = ['ihc', 'i.h.c.']):
+    specimen_info = get_specimen_of_ki67_report(file_txt_unique, ki67_specimen_keyword)
+    keyword_info = get_keyword_info(file_txt_unique, ['clone mib-1', 'ki 67'])
+    block_id = get_block_id(specimen_info)
+    ihc_no = get_ihc_no(file_txt_unique, ihc_keyword)
+    ki67_status = get_ki67_status(file_txt_unique, ki67_keyword)
+    ki67_percent = get_ki67_percent(file_txt_unique, ki67_keyword)
+    ki67_data = [specimen_info, block_id, ihc_no, keyword_info, ki67_status, ki67_percent]
+    return ki67_data
+
+# ihc_data = get_ihc_data(unique_text_lst, specimen_keyword = 'specimen', er_keyword = 'estrogen', pr_keyword = 'progesterone',
+#                  her2_keyword = 'her-2/neu', ihc_no_keyword = 'ihc')
+
+def put_all_report_data_into_one_row(unique_txt_lst):
+    list_of_unique_txt = []
+    list_of_unique_txt.append(' | '.join([str(x) for x in unique_txt_lst]))
+    return list_of_unique_txt
+
 def get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
-                            ihc_keyword = 'immunohistochemistry', ihc_no_keyword = 'ihc', blood_count_keyword = 'blood count',
+                            ihc_keyword = 'immunohistochemistry', ihc_no_keyword = ['ihc', 'i.h.c.'], blood_count_keyword = 'blood count',
                             ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
                             nutrient_keyword = ['vitamin', 'calcium', 'phosphorus', 'urea', 'serum'],
                            sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex',
                            cyto_keyword = 'cyto no', specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis',
-                           tils_status_types = ['moderate', 'mild', 'marked'], nottingham_grade_keyword = 'nottingham',
+                           tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked'],
+                            nottingham_grade_keyword = 'nottingham',
                            nottingham_score_keyword = 'nottingham', er_keyword = 'estrogen', pr_keyword = 'progesterone',
-                           her2_keyword = 'her-2/neu'):
+                           her2_keyword = 'her-2/neu', ki67_keyword = 'clone mib-1', ki67_specimen_keyword = 'paraffin'):
     file_names = os.listdir(txt_folder_path)
     extracted_histo_data = []
     extracted_cyto_data = []
     extracted_ihc_data = []
+    extracted_ki67_data = []
     for file_name in file_names:
         if file_name.endswith('.txt'):
             print(file_name)
@@ -461,111 +579,125 @@ def get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_
             identification_data = get_identification_data(file_txt_unique, sid_keyword, sample_dt_keyword,
                             age_str, gender_str)
             identification_data.insert(0, file_name)
-            print(identification_data)
             report_type = classify_report_by_type(file_txt_unique, cytology_keyword, histology_keyword, ihc_keyword,
                                 blood_count_keyword, ki_keyword, glucose_keyword, liver_keyword, nutrient_keyword)
             if report_type == 'cytology':
                 cyto_data_lst = get_cytology_data(file_txt_unique, diagnosis_keyword, specimen_keyword, cyto_keyword)
-                cytology_data = identification_data + cyto_data_lst
+                report_text = put_all_report_data_into_one_row(file_txt_unique)
+                cytology_data = identification_data + cyto_data_lst + report_text
                 extracted_cyto_data.append(cytology_data)
             elif report_type == 'histology':
                 histo_lst = get_histology_data(file_txt_unique, diagnosis_keyword, specimen_keyword,
-                       nottingham_grade_keyword, nottingham_score_keyword, tils_status_types)
-                histology_data = identification_data + histo_lst
+                       nottingham_grade_keyword, nottingham_score_keyword, tils_keyword, tils_status_types)
+                report_text = put_all_report_data_into_one_row(file_txt_unique)
+                histology_data = identification_data + histo_lst + report_text
                 extracted_histo_data.append(histology_data)
             elif report_type == 'immunohistochemistry':
                 ihc_lst = get_ihc_data(file_txt_unique, specimen_keyword, er_keyword, pr_keyword,
                             her2_keyword, ihc_no_keyword)
-                ihc_data = identification_data + ihc_lst
+                report_text = put_all_report_data_into_one_row(file_txt_unique)
+                ihc_data = identification_data + ihc_lst + report_text
                 extracted_ihc_data.append(ihc_data)
+            elif report_type == 'ki67':
+                ki67_data_lst = get_ki67_data(file_txt_unique, ki67_keyword, ki67_specimen_keyword, ihc_no_keyword)
+                report_text = put_all_report_data_into_one_row(file_txt_unique)
+                ki67_data = identification_data + ki67_data_lst + report_text
+                extracted_ki67_data.append(ki67_data)
     cyto_df = pd.DataFrame(extracted_cyto_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
-                                                         'age', 'gender', 'specimen', 'diagnosis', 'cyto_no'])
+                                                         'age', 'gender', 'specimen', 'diagnosis', 'cyto_no', 'report_text'])
     histo_df = pd.DataFrame(extracted_histo_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
                                                          'age', 'gender', 'specimen', 'diagnosis', 'nottingham_grade',
-                                                           'nottingham_score', 'tils_status'])
+                                                           'nottingham_score', 'tils_status', 'report_text'])
     ihc_df = pd.DataFrame(extracted_ihc_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
                                                          'age', 'gender', 'specimen', 'block_id', 'ihc_no', 'er_status',
-                                                       'er_percent', 'pr_status', 'pr_percent', 'her2_status', 'her2_grade'])
-    return cyto_df, histo_df, ihc_df
+                                                       'er_percent', 'pr_status', 'pr_percent', 'her2_status', 'her2_grade',
+                                                       'report_text'])
+    ki67_df = pd.DataFrame(extracted_ki67_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
+                                                         'age', 'gender', 'specimen', 'block_id', 'ihc_no', 'ki67_keyword_info',
+                                                         'ki67_status', 'ki67_percent', 'report_text'])
+    return cyto_df, histo_df, ihc_df, ki67_df
 
-cyto_df, histo_df, ihc_df = get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
-                            ihc_keyword = 'immunohistochemistry', ihc_no_keyword = 'ihc', blood_count_keyword = 'blood count',
+cyto_df, histo_df, ihc_df, ki67_df = get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
+                            ihc_keyword = 'immunohistochemistry', ihc_no_keyword = ['ihc', 'i.h.c.'], blood_count_keyword = 'blood count',
                             ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
                             nutrient_keyword = ['vitamin', 'calcium', 'phosphorus', 'urea', 'serum'],
                            sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex',
                            cyto_keyword = 'cyto no', specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis',
-                           tils_status_types = ['moderate', 'mild', 'marked'], nottingham_grade_keyword = 'nottingham',
+                           tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked'],
+                            nottingham_grade_keyword = 'nottingham',
                            nottingham_score_keyword = 'nottingham', er_keyword = 'estrogen', pr_keyword = 'progesterone',
-                           her2_keyword = 'her-2/neu')
+                           her2_keyword = 'her-2/neu', ki67_keyword = 'clone mib-1', ki67_specimen_keyword = 'paraffin')
 
-writer = pd.ExcelWriter('D:\\Shweta\\path_reports\\Histopath_reports_from_server\\Biopsy\\txt_files_after_removing_lines\\output_df\\2021_09_04_all_bx_path_data_sk.xlsx',
-                        engine='xlsxwriter')
+# writer = pd.ExcelWriter('D:\\Shweta\\path_reports\\Histopath_reports_from_server\\Biopsy\\txt_files_after_removing_lines\\output_df\\2021_09_06_bx_cyto_ihc_ki67_data_with_file_txt_sk.xlsx',
+#                         engine='xlsxwriter')
+#
+# cyto_df.to_excel(writer, sheet_name='cytology', index=False)
+# histo_df.to_excel(writer, sheet_name='histology', index=False)
+# ihc_df.to_excel(writer, sheet_name='immunohistochemistry', index=False)
+# ki67_df.to_excel(writer, sheet_name='ki67', index=False)
+# writer.save()
 
-cyto_df.to_excel(writer, sheet_name='cytology', index=False)
-histo_df.to_excel(writer, sheet_name='histology', index=False)
-ihc_df.to_excel(writer, sheet_name='immunohistochemistry', index=False)
-writer.save()
+# def get_report_information(txt_folder_path, sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
+#                             ihc_keyword = 'immunohistochemistry', ihc_no_keyword = 'ihc', blood_count_keyword = 'blood count',
+#                             ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
+#                             nutrient_keyword = ['vitamin', 'calcium', 'phosphorus', 'urea', 'serum'],
+#                            sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex',
+#                            cyto_keyword = 'cyto no', specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis',
+#                            tils_status_types = ['moderate', 'mild', 'marked'], nottingham_grade_keyword = 'nottingham',
+#                            nottingham_score_keyword = 'nottingham', er_keyword = 'estrogen', pr_keyword = 'progesterone',
+#                            her2_keyword = 'her-2/neu'):
+#     file_names = os.listdir(txt_folder_path)
+#     extracted_txt_lst = []
+#     for file_name in file_names:
+#         if file_name.endswith('.txt'):
+#             print(file_name)
+#             file_txt = get_report_text_into_list(os.path.join(txt_folder_path, file_name))
+#             file_txt_unique = get_unique_value_from_list(file_txt)
+#             sid = get_sid(file_txt_unique, sid_keyword)
+#             patient_name = get_patient_name(file_txt_unique)
+#             report_type = classify_report_by_type(file_txt_unique, cytology_keyword, histology_keyword, ihc_keyword,
+#                                                  blood_count_keyword,
+#                                                   ki_keyword, glucose_keyword, liver_keyword,
+#                                                   nutrient_keyword
+#                                                   )
+#             sample_date = get_sample_date(file_txt_unique, sample_dt_keyword)
+#             age = get_age(file_txt_unique, age_str)
+#             gender = get_gender(file_txt_unique, gender_str)
+#             specimen_info = get_specimen(file_txt_unique, specimen_keyword)
+#             tils_status = get_tils_status(file_txt_unique, tils_status_types)
+#             block_id = get_block_id(specimen_info)
+#             ihc_no = get_ihc_no(unique_text_lst, ihc_no_keyword)
+#             cyto_no = get_cyto_no(unique_text_lst, cyto_keyword)
+#             diagnosis = get_diagnosis(file_txt_unique, diagnosis_keyword)
+#             grade = get_notthingham_grade(file_txt_unique, nottingham_grade_keyword)
+#             score = get_notthingham_score(file_txt_unique, nottingham_score_keyword)
+#             er_status = get_er_status(file_txt_unique, er_keyword)
+#             er_percent = get_er_percent(file_txt_unique, er_keyword)
+#             pr_status = get_pr_status(file_txt_unique, pr_keyword)
+#             pr_percent = get_pr_percent(file_txt_unique, pr_keyword)
+#             her2_status = get_her2_status(file_txt_unique, her2_keyword)
+#             her2_grade = get_her2_grade(file_txt_unique, her2_keyword)
+#             if pr_status is None and er_status is not None:
+#                 pr_status = er_status
+#             txt_lst = [file_name, patient_name, sid, report_type, sample_date, age, gender, specimen_info, tils_status,
+#                        block_id, ihc_no, cyto_no, diagnosis, grade, score, er_status, er_percent, pr_status, pr_percent, her2_status,
+#                        her2_grade]
+#             extracted_txt_lst.append(txt_lst)
+#             colnames = ['report_name', 'patient_name', 'lab_sid', 'report_type', 'sample_date', 'age', 'gender', 'specimen',
+#                         'tils_status', 'block_id', 'ihc_no', 'cyto_no', 'diagnosis', 'nottingham_grade', 'nottingham_score', 'er_status', 'er_percent', 'pr_status',
+#                         'pr_percent', 'her2_status', 'her2_grade']
+#     output_df = pd.DataFrame(extracted_txt_lst, columns=colnames)
+#     return output_df
 
-def get_report_information(txt_folder_path, sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
-                            ihc_keyword = 'immunohistochemistry', ihc_no_keyword = 'ihc', blood_count_keyword = 'blood count',
-                            ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
-                            nutrient_keyword = ['vitamin', 'calcium', 'phosphorus', 'urea', 'serum'],
-                           sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex',
-                           cyto_keyword = 'cyto no', specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis',
-                           tils_status_types = ['moderate', 'mild', 'marked'], nottingham_grade_keyword = 'nottingham',
-                           nottingham_score_keyword = 'nottingham', er_keyword = 'estrogen', pr_keyword = 'progesterone',
-                           her2_keyword = 'her-2/neu'):
-    file_names = os.listdir(txt_folder_path)
-    extracted_txt_lst = []
-    for file_name in file_names:
-        if file_name.endswith('.txt'):
-            print(file_name)
-            file_txt = get_report_text_into_list(os.path.join(txt_folder_path, file_name))
-            file_txt_unique = get_unique_value_from_list(file_txt)
-            sid = get_sid(file_txt_unique, sid_keyword)
-            patient_name = get_patient_name(file_txt_unique)
-            report_type = classify_report_by_type(file_txt_unique, cytology_keyword, histology_keyword, ihc_keyword,
-                                                 blood_count_keyword,
-                                                  ki_keyword, glucose_keyword, liver_keyword,
-                                                  nutrient_keyword
-                                                  )
-            sample_date = get_sample_date(file_txt_unique, sample_dt_keyword)
-            age = get_age(file_txt_unique, age_str)
-            gender = get_gender(file_txt_unique, gender_str)
-            specimen_info = get_specimen(file_txt_unique, specimen_keyword)
-            tils_status = get_tils_status(file_txt_unique, tils_status_types)
-            block_id = get_block_id(specimen_info)
-            ihc_no = get_ihc_no(unique_text_lst, ihc_no_keyword)
-            cyto_no = get_cyto_no(unique_text_lst, cyto_keyword)
-            diagnosis = get_diagnosis(file_txt_unique, diagnosis_keyword)
-            grade = get_notthingham_grade(file_txt_unique, nottingham_grade_keyword)
-            score = get_notthingham_score(file_txt_unique, nottingham_score_keyword)
-            er_status = get_er_status(file_txt_unique, er_keyword)
-            er_percent = get_er_percent(file_txt_unique, er_keyword)
-            pr_status = get_pr_status(file_txt_unique, pr_keyword)
-            pr_percent = get_pr_percent(file_txt_unique, pr_keyword)
-            her2_status = get_her2_status(file_txt_unique, her2_keyword)
-            her2_grade = get_her2_grade(file_txt_unique, her2_keyword)
-            if pr_status is None and er_status is not None:
-                pr_status = er_status
-            txt_lst = [file_name, patient_name, sid, report_type, sample_date, age, gender, specimen_info, tils_status,
-                       block_id, ihc_no, cyto_no, diagnosis, grade, score, er_status, er_percent, pr_status, pr_percent, her2_status,
-                       her2_grade]
-            extracted_txt_lst.append(txt_lst)
-            colnames = ['report_name', 'patient_name', 'lab_sid', 'report_type', 'sample_date', 'age', 'gender', 'specimen',
-                        'tils_status', 'block_id', 'ihc_no', 'cyto_no', 'diagnosis', 'nottingham_grade', 'nottingham_score', 'er_status', 'er_percent', 'pr_status',
-                        'pr_percent', 'her2_status', 'her2_grade']
-    output_df = pd.DataFrame(extracted_txt_lst, columns=colnames)
-    return output_df
+# output_df = get_report_information(txt_folder_path, sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
+#                             ihc_keyword = 'immunohistochemistry', blood_count_keyword = 'blood count',
+#                             ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
+#                             nutrient_keyword = ['vitamin','calcium', 'phosphorus', 'urea', 'serum'],
+#                             sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex', cyto_keyword = 'cyto no',
+#                             specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis', tils_status_types = ['moderate', 'mild', 'marked'],
+#                             nottingham_grade_keyword = 'nottingham', nottingham_score_keyword = 'nottingham',
+#                             er_keyword='estrogen', pr_keyword='progesterone', her2_keyword='her-2/neu')
 
-output_df = get_report_information(txt_folder_path, sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
-                            ihc_keyword = 'immunohistochemistry', blood_count_keyword = 'blood count',
-                            ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
-                            nutrient_keyword = ['vitamin','calcium', 'phosphorus', 'urea', 'serum'],
-                            sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex', cyto_keyword = 'cyto no',
-                            specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis', tils_status_types = ['moderate', 'mild', 'marked'],
-                            nottingham_grade_keyword = 'nottingham', nottingham_score_keyword = 'nottingham',
-                            er_keyword='estrogen', pr_keyword='progesterone', her2_keyword='her-2/neu')
+# output_df.to_excel('D:/Shweta/path_reports/Histopath_reports_from_server/Biopsy/txt_files_after_removing_lines/output_df/2021_09_03_bx_path_data_sk.xlsx',
+#                    index=False)
 
-output_df.to_excel('D:/Shweta/path_reports/Histopath_reports_from_server/Biopsy/txt_files_after_removing_lines/output_df/2021_09_03_bx_path_data_sk.xlsx',
-                   index=False)

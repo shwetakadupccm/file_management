@@ -4,9 +4,11 @@ import os
 import shutil
 from fuzzywuzzy import fuzz, process
 
-patient_names_df = pd.read_excel('D:/Shweta/nact_data/2021_02_17_NACT_final_dk.xlsx')
-
+patient_names_df = pd.read_excel('D:/Shweta/nact_data/nact_patients/2021_09_07_list_of_cases_dk.xlsx')
 path_reports = os.listdir('D:/Shweta/path_reports/Jehangir_Surgery_Path_Reports')
+ag_reports = os.listdir('D:/Shweta/email/attachments_from_ag')
+jeh_reports = os.listdir('D:/Shweta/email/attachments_from_jehangir')
+ruby_hall_reports = os.listdir('D:/Shweta/email/attachments_from_ruby_hall')
 
 def clean_report_name(folder_path):
     path_reports = os.listdir(folder_path)
@@ -32,7 +34,10 @@ clean_report_name('D:\\Shweta\\path_reports\\Jehangir_Surgery_Path_Reports')
 def match_copy_nact_patients_reports(patient_list_df, source_path, destination_path):
     path_reports = os.listdir(source_path)
     path_reports_cleaned = clean_report_name(source_path)
+    matched_report_names = []
     for patient_name in patient_list_df['patient_name']:
+        print(patient_name)
+        patient_name_original = patient_name
         patient_name = patient_name.lower()
         print(patient_name)
         match_name = process.extractOne(patient_name, path_reports_cleaned, scorer=fuzz.token_sort_ratio)
@@ -41,12 +46,21 @@ def match_copy_nact_patients_reports(patient_list_df, source_path, destination_p
         print(matched_name_index)
         matched_name_report_name = path_reports[matched_name_index]
         print(matched_name_report_name)
+        score = match_name[1]
         file_source_path = os.path.join(source_path, matched_name_report_name)
         destination_path = os.path.join(destination_path)
         shutil.copy(file_source_path, destination_path)
-        print('done')
+        lst = [patient_name_original, matched_name_report_name, score]
+        matched_report_names.append(lst)
+    output_df = pd.DataFrame(matched_report_names, columns=['patient_name_from_nact_data', 'matched_report_name', 'score'])
+    return output_df
 
-# match_copy_nact_patients_reports(patient_names_df, 'D:/Shweta/path_reports/Jehangir_Surgery_Path_Reports',
-#                                  'D:/Shweta/path_reports/2021_08_30_nact_path_reports')
+
+output_df = match_copy_nact_patients_reports(patient_names_df, 'D:/Shweta/email/attachments_from_ag',
+                                 'D:/Shweta/path_reports/2021_08_30_nact_path_reports')
+
+output_df.to_excel('D:/Shweta/path_reports/2021_08_30_nact_path_reports/output_df/2021_07_09_matched_nact_patient_report_ag_sk.xlsx',
+                   index=False)
+##
 
 
