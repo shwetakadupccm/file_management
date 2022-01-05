@@ -13,7 +13,6 @@ def clean_names(df, name_str):
         cleaned_names.append(name)
     return cleaned_names
 
-
 def find_matched_name_file_num(source_file, test_file, source_name_str='patient_name', test_name_str='Patient Name',
                       source_file_str='file_number', test_file_str='File_Number'):
     clean_source = 'clean_' + source_name_str

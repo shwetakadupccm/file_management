@@ -16,7 +16,6 @@ def find_date(sx_df, dt_str = 'Sx Date'):
             dts.append(sx_dt)
     return dts
 
-
 def convert_all_dates_into_one_format(dates):
     dts = []
     for date in dates:
@@ -27,7 +26,6 @@ def convert_all_dates_into_one_format(dates):
         else:
             dts.append(date)
     return dts
-
 
 def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str = 'Name '):
     sx_dates = find_date(sx_df, dt_str)

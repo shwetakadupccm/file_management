@@ -21,13 +21,12 @@ def create_date_dir_move_file(source_path, destination_path, suffix, start_dt):
                 if not os.path.isfile(os.path.join(dt_path, file)):
                     shutil.move(os.path.join(source_path, file), dt_path)
 
+source_path = 'D:/Shweta/ot_notes/2021_09_30_ot/Ot notes may to present'
+destination_path = 'D:/Shweta/ot_notes/2021_09_30_ot/ot_notes_datewise'
 
-source_path = 'D:\\Shweta\\ot_notes\\2021_08_02'
-destination_path = 'D:\\Shweta\\ot_notes\\2021_08_02_ot\\ot_notes_date_wise'
+create_date_dir_move_file(source_path, destination_path, suffix = '.jpg', start_dt = '2021-05-01')
 
-create_date_dir_move_file(source_path, destination_path, suffix = '.jpg', start_dt = '2021-06-14')
-
-create_date_dir_move_file(source_path, destination_path, suffix='.jpg', start_dt='2021-03-09')
+# create_date_dir_move_file(source_path, destination_path, suffix='.jpg', start_dt='2021-03-09')
 
 ##
 
@@ -52,7 +51,6 @@ def convert_all_dates_into_one_format(dates):
         else:
             dts.append(date)
     return dts
-
 
 def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str = 'Name '):
     sx_dates = find_date(sx_df, dt_str)
@@ -94,6 +92,11 @@ def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str 
 
 
 sx_images_dts = os.listdir(destination_path)
-sx_df = pd.read_excel('D:\\Shweta\\Surgery\\Surgery list 2021_03_08.xlsx')
+sx_df = pd.read_excel('D:\\Shweta\\Surgery\\Surgery list 2021_09_30.xlsx')
 match_the_dates(destination_path, sx_df, sx_images_dts, dt_str = 'Date', sx_name_str = 'Patient Name')
+
+## classifing the ot data by patient names and adding the file_number into the folder
+
+folder_path = 'D:/Shweta/ot_notes/all_ot_notes'
+
 

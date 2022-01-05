@@ -91,11 +91,14 @@ def find_file_num_from_master_list(source_file, test_file, source_name_str='pati
             #matched_df['comparison'] = np.where(matched_df[test_dt_str] == matched_df[surgery_dt_str], True, False)
     return matched_df
 
+sx_master = pd.read_excel('D:/Shweta/Patient_name_matching/master_list/2010_2020_name_file_number_whole.xlsx')
+test_file = pd.read_excel('D:/Shweta/Surgery/2021_11_08_extreme_oncoplasty_names_file_number.xlsx')
 
-matched_names_file_num = find_file_num_from_master_list(master_file,test_file,source_name_str='patient_name', source_file_str = 'file_number',
-                                   test_name_str='736 Breast surgery by Dr. koppiker 2010-2018')
+matched_names_file_num = find_file_num_from_master_list(sx_master,test_file,source_name_str='patient_name', source_file_str = 'file_number',
+                                   test_name_str='patient_name')
 
-matched_names_file_num.to_excel(os.path.join(folder, '2021_02_03_matched_names_file_number_all_sk.xlsx'))4
+matched_names_file_num.to_excel('D:/Shweta/Surgery/2021_11_09_extreme_oncoplasty_matched_names_file_number_sk.xlsx',
+                                index=False)
 
 ### extracting file numbers for surgery data(dy)
 

@@ -13,7 +13,6 @@ def clean_names(df, name_str):
         cleaned_names.append(name)
     return cleaned_names
 
-
 def find_matched_name_file_num(source_file, test_file, source_name_str='patient_name', test_name_str='Patient Name',
                       source_file_str='file_number', test_file_str='File_Number'):
     clean_source = 'clean_' + source_name_str
@@ -42,7 +41,6 @@ def find_matched_name_file_num(source_file, test_file, source_name_str='patient_
             matched_df['comparison'] = np.where(matched_df['test_' + test_file_str] == matched_df['source_' + source_file_str],
                 True, False)
     return matched_df, source_clean_names, test_clean_names
-
 
 source_file_name = "2010_2018_name_file_number_whole.xlsx"
 test_file_name = "2021_22_07_trial_file_2021_sx_img_sk_sn.xlsx"
