@@ -4,8 +4,32 @@ from fuzzywuzzy import fuzz, process
 import re
 import dateparser
 
-ffpe_data = pd.read_excel('D:\\Shweta\\path_reports\\2021_03_08_ffpe_tils_data.xlsx')
-path_df = pd.read_excel('D:\\Shweta\\path_reports\\2021_02_08_tils_class_index_sk.xlsx')
+ffpe_data = pd.read_excel('D:/Shweta/Blocks_updated_data/2021_09_29_ffpe_data/2021_10_14_ffpe_all_1_1077_sk.xlsx')
+
+cyto_df = pd.read_excel('D:/Shweta/path_reports/all_biopsy/extracted_data/2022_02_03_bx_cyto_histo_ihc_ki67_data_sk.xlsx',
+                        sheet_name= 'cytology')
+
+histo_df = pd.read_excel('D:/Shweta/path_reports/all_biopsy/extracted_data/2022_02_03_bx_cyto_histo_ihc_ki67_data_sk.xlsx',
+                        sheet_name= 'histology')
+
+ihc_df = pd.read_excel('D:/Shweta/path_reports/all_biopsy/extracted_data/2022_02_03_bx_cyto_histo_ihc_ki67_data_sk.xlsx',
+                        sheet_name= 'immunohistochemistry')
+
+##
+cyto_merged = pd.merge(ffpe_data, cyto_df, how='inner', left_on='Lab_ID_SID', right_on='lab_sid')
+cyto_filtered = cyto_merged[cyto_merged['Lab_ID_SID'].notnull()]
+histo_merged = pd.merge(ffpe_data, histo_df, how='inner', left_on='Lab_ID_SID', right_on='lab_sid')
+histo_filtered = histo_merged[histo_merged['Lab_ID_SID'].notnull()]
+ihc_merged = pd.merge(ffpe_data, ihc_df, how='inner', left_on='IHC_biopsy_lab_id', right_on='lab_sid')
+ihc_filtered = ihc_merged[ihc_merged['IHC_biopsy_lab_id'].notnull()]
+
+writer = pd.ExcelWriter('D:/Shweta/path_reports/all_biopsy/merged_data/2022_02_04_merged_data_sk.xlsx',
+                        engine='xlsxwriter')
+
+cyto_filtered.to_excel(writer, sheet_name='cytology', index=False)
+histo_filtered.to_excel(writer, sheet_name='histology', index=False)
+ihc_filtered.to_excel(writer, sheet_name='immunohistochemistry', index=False)
+writer.save()
 
 def clean_names(df, name_str):
     cleaned_names = []

@@ -5,7 +5,8 @@ import datetime
 
 pdf_folder_path = 'D:/Shweta/path_reports/Histopath_reports_from_server/Biopsy'
 # txt_files_folder_path = 'D:/Shweta/path_reports/Histopath_reports_from_server/Biopsy/bx_img_txt_files'
-txt_folder_path = 'D:/Shweta/path_reports/Histopath_reports_from_server/Biopsy/txt_files_after_removing_lines'
+txt_folder_path = 'D:/Shweta/path_reports/all_biopsy/txt_files'
+file_name = '101_19_bx_0.txt'
 
 ##
 def get_report_text_into_list(file_path):
@@ -19,6 +20,7 @@ def get_report_text_into_list(file_path):
             line_txt_cleaned = line_txt.lower()
             line_txt_cleaned = re.sub('reference:dr.koppikercb ms', '', line_txt_cleaned)
             line_txt_cleaned = re.sub('reference', '', line_txt_cleaned)
+            line_txt_cleaned = re.sub('referonce', '', line_txt_cleaned)
             line_txt_cleaned = re.sub('dr.koppikercb', '', line_txt_cleaned)
             line_txt_cleaned = re.sub('koppiker', '', line_txt_cleaned)
             line_txt_cleaned = re.sub('sample collected at', '', line_txt_cleaned)
@@ -43,19 +45,23 @@ def get_report_text_into_list(file_path):
             line_txt_cleaned = re.sub('accreditation asper iso certno mc refer scope wwwnablindiaorg', '', line_txt_cleaned)
             line_txt_cleaned = re.sub('er/pr negative', '', line_txt_cleaned)
             line_txt_cleaned = re.sub('er/ppr negative', '', line_txt_cleaned)
+            line_txt_cleaned = re.sub('clinical detalls', '', line_txt_cleaned)
+            line_txt_cleaned = re.sub('microscopy : ', '', line_txt_cleaned)
             lines.append(line_txt_cleaned)
     file.close()
     return lines
 
-def get_unique_value_from_list(list_with_duplicate_values):
-    unique_list = []
-    for value in list_with_duplicate_values:
-        if value not in unique_list:
-            unique_list.append(value)
-    output_lst = [line for line in unique_list if line]
-    return output_lst
+# def remove_blanks(report_text):
+#     while ('' in report_text):
+#         report_text.remove('')
+#     return report_text
 
-text_lst = get_report_text_into_list(os.path.join(txt_folder_path, '216_18_bx_ihc_ki67_3.txt'))
+def get_unique_value_from_list(list_with_duplicate_values):
+    while ('' in list_with_duplicate_values):
+        list_with_duplicate_values.remove('')
+    return list_with_duplicate_values
+
+text_lst = get_report_text_into_list(os.path.join(txt_folder_path, '101_19_bx_0.txt'))
 text_df = pd.DataFrame(text_lst)
 unique_text_lst = get_unique_value_from_list(text_lst)
 unique_text_df = pd.DataFrame(unique_text_lst)
@@ -64,6 +70,7 @@ def get_sid(text_lst, sid_keyword = 'sid'):
     for line in text_lst:
         if sid_keyword in line:
             sid = re.sub('\D', '', str(line))
+            sid = sid.strip()
             return sid
 
 def get_patient_name(text_lst):
@@ -71,6 +78,26 @@ def get_patient_name(text_lst):
     cleaned_patient_name = re.sub(r'[^a-zA-Z ]', '', str(patient_name))
     cleaned_patient_name = re.sub('sid', '', cleaned_patient_name)
     cleaned_patient_name = re.sub('right side', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('right e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('left e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('lt e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('rt e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('right ref', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('ref', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('c b', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('msconsult antonco sur', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('report', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('cb ms', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('md', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('or ', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('right', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('left', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('breast', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub(' ms', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('msconsultantonco sur', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('msconsult antonco sur', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('case number', '', cleaned_patient_name)
+    cleaned_patient_name = cleaned_patient_name.strip()
     if cleaned_patient_name is not None:
         return cleaned_patient_name
 
@@ -102,22 +129,113 @@ def get_gender(text_lst, gender_str = 'sex'):
             gender_txt = re.sub(r'[^a-zA-Z]', '', str(line))
             cleaned_gender = re.sub('age', '', gender_txt)
             cleaned_gender = re.sub('years', '', cleaned_gender)
+            cleaned_gender = re.sub('yrs', '', cleaned_gender)
+            cleaned_gender = re.sub('osarn', '', cleaned_gender)
+            cleaned_gender = re.sub('meport', '', cleaned_gender)
+            cleaned_gender = re.sub('seport', '', cleaned_gender)
             cleaned_gender = re.sub('sex', '', cleaned_gender)
             cleaned_gender = re.sub('am', '', cleaned_gender)
             cleaned_gender = re.sub('pm', '', cleaned_gender)
+            cleaned_gender = re.sub('eportase', '', cleaned_gender)
+            cleaned_gender = re.sub('arm', '', cleaned_gender)
+            cleaned_gender = re.sub('eport', '', cleaned_gender)
+            cleaned_gender = re.sub('an', '', cleaned_gender)
+            cleaned_gender = re.sub('aqe', '', cleaned_gender)
+            cleaned_gender = re.sub('aqge', '', cleaned_gender)
+            cleaned_gender = re.sub('report', '', cleaned_gender)
+            cleaned_gender = re.sub('ae', '', cleaned_gender)
+            cleaned_gender = re.sub('pr', '', cleaned_gender)
+            cleaned_gender = re.sub('us', '', cleaned_gender)
+            cleaned_gender = re.sub('r', '', cleaned_gender)
+            cleaned_gender = re.sub('ase', '', cleaned_gender)
+            cleaned_gender = re.sub('oe', '', cleaned_gender)
+            cleaned_gender = re.sub('so', '', cleaned_gender)
+            cleaned_gender = re.sub('pn', '', cleaned_gender)
+            cleaned_gender = cleaned_gender.strip()
             return cleaned_gender
 
 def get_specimen(text_lst, specimen_keyword = 'specimen'):
     for line in text_lst:
         if specimen_keyword in line:
+            specimen = re.sub(r"[^a-z0-9' ]", '', str(line))
+            specimen = re.sub('nature of specimen', '', specimen)
+            specimen = re.sub('nature ofspecimen', '', specimen)
+            specimen = re.sub('nature', '', specimen)
+            specimen = re.sub('of', '', specimen)
+            specimen = re.sub('specimen', '', specimen)
+            specimen = specimen.strip()
+            return specimen
+
+def get_trucut_specimen(text_lst):
+    for line in text_lst:
+        if 'trucut' in line:
             return line
 
-def get_specimen_of_bx_report(text_lst, bx_specimen_keyword = ['trucut', 'specimen']):
-    specimen_lst = []
+def get_specimen_of_bx_report(text_lst, specimen_keyword = 'specimen'):
     for line in text_lst:
-        if any(x in line for x in bx_specimen_keyword):
-            specimen_lst.append(line)
-    return specimen_lst
+        if specimen_keyword in line:
+            specimen = re.sub(r'[^a-z0-9 ]', '', str(line))
+            if specimen == 'nature of specimen':
+                specimen = get_trucut_specimen(text_lst)
+                if specimen is not None:
+                    specimen = specimen.strip()
+                    return specimen
+            specimen = re.sub('nature of specimen', '', str(specimen))
+            specimen = specimen.strip()
+            return specimen
+
+def get_biopsy_type(specimen):
+    specimen_str = str(specimen)
+    if 'trucut' in specimen_str:
+        return 'trucut'
+    elif 'fnac' in specimen_str:
+        return 'fnac'
+    elif 'vab' in specimen_str:
+        return 'vab excision'
+    elif 'wide l' in specimen_str:
+        return 'wide local excision'
+    else:
+        return None
+
+def get_laterality(specimen):
+    laterality = re.sub('trucut', '', str(specimen))
+    laterality = re.sub('biopsy', '', laterality)
+    laterality = re.sub('from', '', laterality)
+    laterality = re.sub('froii', '', laterality)
+    laterality = re.sub('froin', '', laterality)
+    laterality = re.sub('froiii', '', laterality)
+    laterality = re.sub('stereotactic', '', laterality)
+    laterality = re.sub('vab', '', laterality)
+    laterality = re.sub('excision', '', laterality)
+    laterality = re.sub('exadsion', '', laterality)
+    laterality = re.sub('encor', '', laterality)
+    laterality = re.sub('usg', '', laterality)
+    laterality = re.sub('guided', '', laterality)
+    laterality = re.sub('wide', '', laterality)
+    laterality = re.sub('local', '', laterality)
+    laterality = re.sub('fnac', '', laterality)
+    laterality = re.sub('asplrate', '', laterality)
+    laterality = re.sub('aspiration', '', laterality)
+    laterality = re.sub('aspirate', '', laterality)
+    laterality = re.sub('nac', '', laterality)
+    laterality = laterality.strip()
+    laterality_str = str(laterality)
+    if 'right' or 'left' in laterality_str:
+        return laterality
+    else:
+        return None
+
+def get_biopsy_site(laterality):
+    if 'left' in laterality:
+        return 'left'
+    elif 'leit' in laterality:
+        return 'left'
+    elif 'right' in laterality:
+        return 'right'
+    elif 'rlght' in laterality:
+        return 'right'
+    else:
+        return None
 
 def get_block_id(specimen):
     if specimen is not None:
@@ -146,6 +264,8 @@ def get_block_id(specimen):
         block_id = re.sub('invasive', '', block_id)
         block_id = re.sub('invive', '', block_id)
         block_id = re.sub('axill', '', block_id)
+        block_id = block_id.upper()
+        block_id = block_id.strip()
         return block_id
 
 def get_ihc_no(text_lst, ihc_keywprd = ['ihc', 'i.h.c.']):
@@ -159,6 +279,8 @@ def get_ihc_no(text_lst, ihc_keywprd = ['ihc', 'i.h.c.']):
             ihc_id = re.sub('ihc', '', ihc_id)
             ihc_id = re.sub('i.h.c.', '', ihc_id)
             ihc_id = re.sub(':', '', ihc_id)
+            ihc_id = ihc_id.upper()
+            ihc_id = ihc_id.strip()
             return ihc_id
 
 def get_cyto_no(text_lst, cyto_keyword = 'cyto no'):
@@ -167,6 +289,8 @@ def get_cyto_no(text_lst, cyto_keyword = 'cyto no'):
             cyto_no = re.sub('cyto', '', str(line))
             cyto_no = re.sub('no.', '', cyto_no)
             cyto_no = re.sub('no', '', cyto_no)
+            cyto_no = cyto_no.upper()
+            cyto_no = cyto_no.strip()
             return cyto_no
 
 def get_hpe_no(text_lst, hpe_keyword = 'hpe no'):
@@ -175,6 +299,8 @@ def get_hpe_no(text_lst, hpe_keyword = 'hpe no'):
             hpe_no = re.sub('hpe no.', '', str(line))
             hpe_no = re.sub(':', '', hpe_no)
             hpe_no = re.sub('no', '', hpe_no)
+            hpe_no = hpe_no.upper()
+            hpe_no = hpe_no.strip()
             return hpe_no
 
 diagnosis_keyword = ['diagnosis', 'dlagnosls']
@@ -188,6 +314,7 @@ def get_diagnosis(text_lst, diagnosis_keyword_1 = 'diagnosis', diagnosis_keyword
             dia_info2 = text_lst[dia_index + 1]
             dia_info3 = text_lst[dia_index + 2]
             dia_info = dia_info0 + ' ; ' + dia_info1 + ' ; ' + dia_info2 + ' ; ' + dia_info3
+            dia_info = dia_info.strip()
             return dia_info
         elif diagnosis_keyword_2 in line:
             dia_index = text_lst.index(line)
@@ -196,9 +323,36 @@ def get_diagnosis(text_lst, diagnosis_keyword_1 = 'diagnosis', diagnosis_keyword
             dia_info2 = text_lst[dia_index + 1]
             dia_info3 = text_lst[dia_index + 2]
             dia_info = dia_info0 + ' ; ' + dia_info1 + ' ; ' + dia_info2 + ' ; ' + dia_info3
+            dia_info = dia_info.strip()
             return dia_info
 
-# diagnosis = get_diagnosis(txt, diagnosis_keyword_1 = 'diagnosis', diagnosis_keyword_2 = 'dlagnosls')
+def get_tumour_diagnosis(text_lst, tumour_diagnosis_keyword = ['invasive', 'infiltrating']):
+    for line in text_lst:
+        if any(x in line for x in tumour_diagnosis_keyword):
+            tumour_diagnosis = re.sub(r'[^a-z0-9 ]', '', str(line))
+            tumour_diagnosis = re.sub('diagnosis', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('dlagnosls', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('trucut biopsy from left breast', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('1 trucut biopsy from leit breast', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('maninene', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('positions', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('1', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('2', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('blagoasis', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('duct carcinoma in situ', '', tumour_diagnosis)
+            tumour_diagnosis = re.sub('dcis', '', tumour_diagnosis)
+            tumour_diagnosis = tumour_diagnosis.strip()
+            return tumour_diagnosis
+
+def get_lympho_vascular_emboli_status(text_lst, lympho_keyword = ['lympho', 'vascular', 'emboli']):
+    for line in text_lst:
+        if any(x in line for x in lympho_keyword):
+            return line
+
+def get_dcis(text_lst, dcis_keyword = ['duct carcinoma in situ' ,'dcis']):
+    for line in text_lst:
+        if any(x in line for x in dcis_keyword):
+            return line
 
 def get_notthingham_grade(text_lst, nottingham_keyword = ['nottingham', 'nottingh']):
     for line in text_lst:
@@ -206,6 +360,7 @@ def get_notthingham_grade(text_lst, nottingham_keyword = ['nottingham', 'notting
             notingham_grade = re.split(',', line)
             notingham_grade = notingham_grade[0]
             notingham_grade = re.sub('\D', '', str(notingham_grade))
+            notingham_grade = notingham_grade.strip()
             return notingham_grade
 
 def get_notthingham_score(text_lst, nottingham_score_keyword = ['nottingham', 'nottingh']):
@@ -216,6 +371,7 @@ def get_notthingham_score(text_lst, nottingham_score_keyword = ['nottingham', 'n
                 notingham_score = notingham_score[1]
                 notingham_score = re.sub('score', '', notingham_score)
                 notingham_score = re.sub(':', '', notingham_score)
+                notingham_score = notingham_score.strip()
                 return notingham_score
     except IndexError:
         return None
@@ -311,6 +467,15 @@ def get_tils_status(text_lst, tils_keyword = ['stroma', 'infiltra'], tils_status
 
 # tils_statu = get_tils_status(unique_text_lst, tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked'])
 
+def get_histopath_examination(text_lst, h_and_e_keyword = 'h&e'):
+    for line in text_lst:
+        if h_and_e_keyword in line:
+            histo_exam = re.sub('h&e', '', str(line))
+            histo_exam = re.sub(':', '', histo_exam)
+            histo_exam = re.sub('-', '', histo_exam)
+            histo_exam = histo_exam.strip()
+            return histo_exam
+
 def get_her2_status(text_lst, her2_keyword = 'her-2/neu'):
     unwanted_txt = {'score her-2 protein staining pattern', '1+ negative a weak incomplete membrane staining',
                     '2+ borderline a weak to moderate complete staining',
@@ -397,14 +562,15 @@ def get_ki67_percent(text_lst, ki67_keyword = 'clone mib-1'):
             cleaned_txt = re.sub(r'[^0-9-%]', '', cleaned_txt)
             return cleaned_txt
 
-ki67_percent = get_ki67_percent(unique_text_lst, 'clone mib-1')
+# ki67_percent = get_ki67_percent(unique_text_lst, 'clone mib-1')
 
 def get_specimen_of_ki67_report(txt_lst, ki67_specimen_keyword = 'paraffin'):
     for line in txt_lst:
         if ki67_specimen_keyword in line:
-            return line
+            cleaned_specimen = re.sub('specimen', '', str(line))
+            return cleaned_specimen
 
-specimen = get_specimen_of_ki67_report(unique_text_lst, ki67_specimen_keyword = 'paraffin')
+# specimen = get_specimen_of_ki67_report(unique_text_lst, ki67_specimen_keyword = 'paraffin')
 
 # def get_her2_status(text_lst, her2_keyword = 'her-2/neu'):
 #     for line in text_lst:
@@ -529,35 +695,48 @@ def get_identification_data(file_txt_unique, sid_keyword = 'sid', sample_dt_keyw
     identification_data = [sid, patient_name, sample_date, age, gender]
     return identification_data
 
-id_data = get_identification_data(unique_text_lst, sid_keyword = 'sid', sample_dt_keyword = 'sample date',
-                            age_str = 'years', gender_str = 'sex')
+# id_data = get_identification_data(unique_text_lst, sid_keyword = 'sid', sample_dt_keyword = 'sample date',
+#                             age_str = 'years', gender_str = 'sex')
 
-def get_histology_data(file_txt_unique, diagnosis_keyword = 'diagnosis', bx_specimen_keyword = ['trucut', 'specimen'],
+def get_histology_data(file_txt_unique, diagnosis_keyword = 'diagnosis', specimen_keyword = 'specimen',
                        hpe_no_keyword = 'hpe no', nottingham_grade_keyword = ['nottingham', 'nottingh'],
                        nottingham_score_keyword = ['nottingham', 'nottingh'], tils_keyword = ['stroma', 'infiltra'],
-                       tils_status_types = ['moderate', 'mild', 'marked', 'mononuclear']):
-    specimen = get_specimen_of_bx_report(file_txt_unique, bx_specimen_keyword)
+                       tils_status_types = ['moderate', 'mild', 'marked', 'mononuclear'],
+                       tumour_diagnosis_keyword = ['invasive', 'infiltrating'],
+                       lympho_keyword = ['lympho', 'vascular', 'emboli'], dcis_keyword = ['duct carcinoma in situ' ,'dcis']):
+    specimen = get_specimen_of_bx_report(file_txt_unique, specimen_keyword)
+    biopsy_type = get_biopsy_type(specimen)
+    laterality = get_laterality(specimen)
+    biopsy_site = get_biopsy_site(laterality)
     hpe_no = get_hpe_no(file_txt_unique, hpe_no_keyword)
     diagnosis = get_diagnosis(file_txt_unique, diagnosis_keyword)
+    tumour_diagnosis = get_tumour_diagnosis(file_txt_unique, tumour_diagnosis_keyword)
+    lympho_vascular = get_lympho_vascular_emboli_status(file_txt_unique, lympho_keyword)
+    dcis = get_dcis(file_txt_unique, dcis_keyword)
     tils_status = get_tils_status(file_txt_unique, tils_keyword, tils_status_types)
     grade = get_notthingham_grade(file_txt_unique, nottingham_grade_keyword)
     score = get_notthingham_score(file_txt_unique, nottingham_score_keyword)
-    histo_data = [specimen, hpe_no, diagnosis, grade, score, tils_status]
+    histo_data = [specimen, biopsy_type, laterality, biopsy_site, hpe_no, diagnosis, tumour_diagnosis, lympho_vascular,
+                  dcis, grade, score, tils_status]
     return histo_data
 
 def get_cytology_data(file_txt_unique, diagnosis_keyword = 'diagnosis', specimen_keyword = 'specimen',
                       cyto_keyword = 'cyto no'):
     specimen = get_specimen(file_txt_unique, specimen_keyword)
+    biopsy_type = get_biopsy_type(specimen)
+    laterality = get_laterality(specimen)
+    biopsy_site = get_biopsy_site(laterality)
     diagnosis = get_diagnosis(file_txt_unique, diagnosis_keyword)
     cyto_no = get_cyto_no(file_txt_unique, cyto_keyword)
-    cyto_data = [specimen, diagnosis, cyto_no]
+    cyto_data = [specimen, biopsy_type, laterality, biopsy_site, diagnosis, cyto_no]
     return cyto_data
 
 def get_ihc_data(file_txt_unique, specimen_keyword = 'specimen', er_keyword = 'estrogen', pr_keyword = 'progesterone',
-                 her2_keyword = 'her-2/neu', ihc_no_keyword = 'ihc'):
+                 her2_keyword = 'her-2/neu', ihc_no_keyword = 'ihc', h_and_e_keyword = 'h&e'):
     specimen_info = get_specimen(file_txt_unique, specimen_keyword)
     block_id = get_block_id(specimen_info)
     ihc_no = get_ihc_no(file_txt_unique, ihc_no_keyword)
+    histopath_examination = get_histopath_examination(file_txt_unique, h_and_e_keyword)
     er_status = get_er_status(file_txt_unique, er_keyword)
     er_percent = get_er_percent(file_txt_unique, er_keyword)
     pr_status = get_pr_status(file_txt_unique, pr_keyword)
@@ -566,7 +745,8 @@ def get_ihc_data(file_txt_unique, specimen_keyword = 'specimen', er_keyword = 'e
         pr_status = er_status
     her2_status = get_her2_status(file_txt_unique, her2_keyword)
     her2_grade = get_her2_grade(file_txt_unique, her2_keyword)
-    ihc_data_list = [specimen_info, block_id, ihc_no, er_status, er_percent, pr_status, pr_percent, her2_status, her2_grade]
+    ihc_data_list = [specimen_info, block_id, ihc_no, histopath_examination, er_status, er_percent, pr_status, pr_percent,
+                     her2_status, her2_grade]
     return ihc_data_list
 
 def get_ki67_data(file_txt_unique, ki67_keyword = 'clone mib-1', ki67_specimen_keyword = 'paraffin',
@@ -597,13 +777,14 @@ def get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_
                             ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
                             nutrient_keyword = ['vitamin', 'calcium', 'phosphorus', 'urea', 'serum'],
                             sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex',
-                            bx_specimen_keyword = ['trucut', 'specimen'], hpe_no_keyword = 'hpe no',
+                            hpe_no_keyword = 'hpe no',
                            cyto_keyword = 'cyto no', specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis',
                            tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked', 'mononuclear'],
-                            nottingham_grade_keyword = ['nottingham', 'nottingh'],
+                            nottingham_grade_keyword = ['nottingham', 'nottingh'], h_and_e_keyword = 'h&e',
                            nottingham_score_keyword = ['nottingham', 'nottingh'], er_keyword = 'estrogen',
                             pr_keyword = 'progesterone', her2_keyword = 'her-2/neu', ki67_keyword = 'clone mib-1',
-                            ki67_specimen_keyword = 'paraffin'):
+                            ki67_specimen_keyword = 'paraffin', tumour_diagnosis_keyword = ['invasive', 'infiltrating'],
+                                 lympho_keyword = ['lympho', 'vascular', 'emboli'], dcis_keyword = ['duct carcinoma in situ' ,'dcis']):
     file_names = os.listdir(txt_folder_path)
     extracted_histo_data = []
     extracted_cyto_data = []
@@ -625,14 +806,15 @@ def get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_
                 cytology_data = identification_data + cyto_data_lst + report_text
                 extracted_cyto_data.append(cytology_data)
             elif report_type == 'histology':
-                histo_lst = get_histology_data(file_txt_unique, diagnosis_keyword, bx_specimen_keyword, hpe_no_keyword,
-                       nottingham_grade_keyword, nottingham_score_keyword, tils_keyword, tils_status_types)
+                histo_lst = get_histology_data(file_txt_unique, diagnosis_keyword, specimen_keyword, hpe_no_keyword,
+                       nottingham_grade_keyword, nottingham_score_keyword, tils_keyword, tils_status_types, tumour_diagnosis_keyword,
+                                               lympho_keyword, dcis_keyword)
                 report_text = put_all_report_data_into_one_row(file_txt_unique)
                 histology_data = identification_data + histo_lst + report_text
                 extracted_histo_data.append(histology_data)
             elif report_type == 'immunohistochemistry':
                 ihc_lst = get_ihc_data(file_txt_unique, specimen_keyword, er_keyword, pr_keyword,
-                            her2_keyword, ihc_no_keyword)
+                            her2_keyword, ihc_no_keyword, h_and_e_keyword)
                 report_text = put_all_report_data_into_one_row(file_txt_unique)
                 ihc_data = identification_data + ihc_lst + report_text
                 extracted_ihc_data.append(ihc_data)
@@ -642,13 +824,18 @@ def get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_
                 ki67_data = identification_data + ki67_data_lst + report_text
                 extracted_ki67_data.append(ki67_data)
     cyto_df = pd.DataFrame(extracted_cyto_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
-                                                         'age', 'gender', 'specimen', 'diagnosis', 'cyto_no', 'report_text'])
+                                                         'age', 'gender', 'specimen', 'biopsy_type',  'biopsy_site',
+                                                         'laterality', 'diagnosis',
+                                                         'cyto_no', 'report_text'])
     histo_df = pd.DataFrame(extracted_histo_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
-                                                         'age', 'gender', 'specimen', 'hpe_no', 'diagnosis',
+                                                         'age', 'gender', 'specimen', 'biopsy_type', 'biopsy_site', 'laterality',
+                                                           'hpe_no',
+                                                           'diagnosis', 'tumour_diagnosis', 'lympho_vascular_emoboli', 'dcis',
                                                            'nottingham_grade', 'nottingham_score', 'tils_status',
                                                            'report_text'])
     ihc_df = pd.DataFrame(extracted_ihc_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
-                                                         'age', 'gender', 'specimen', 'block_id', 'ihc_no', 'er_status',
+                                                       'age', 'gender', 'specimen', 'block_id', 'ihc_no', 'histopath_examination',
+                                                       'er_status',
                                                        'er_percent', 'pr_status', 'pr_percent', 'her2_status', 'her2_grade',
                                                        'report_text'])
     ki67_df = pd.DataFrame(extracted_ki67_data, columns=['report_name', 'lab_sid', 'patient_name', 'sample_date',
@@ -656,24 +843,22 @@ def get_report_data_of_all_pages(txt_folder_path, sid_keyword = 'sid', cytology_
                                                          'ki67_status', 'ki67_percent', 'report_text'])
     return cyto_df, histo_df, ihc_df, ki67_df
 
-cyto_df, histo_df, ihc_df, ki67_df = get_report_data_of_all_pages('D:/Shweta/email/attachments_from_ag/txt_files',
-                        sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
+cyto_df, histo_df, ihc_df, ki67_df = get_report_data_of_all_pages('D:/Shweta/path_reports/all_biopsy/txt_files',
+                            sid_keyword = 'sid', cytology_keyword = 'cytology', histology_keyword = 'histology',
                             ihc_keyword = 'immunohistochemistry', ihc_no_keyword = ['ihc', 'i.h.c.'], blood_count_keyword = 'blood count',
                             ki_keyword = 'ki 67', glucose_keyword = 'glucose', liver_keyword = 'liver',
                             nutrient_keyword = ['vitamin', 'calcium', 'phosphorus', 'urea', 'serum'],
-                           sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex',
-                           cyto_keyword = 'cyto no', specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis',
-                            bx_specimen_keyword = ['trucut', 'specimen'], hpe_no_keyword = 'hpe no',
-                           tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked', 'mononuclear'],
+                            sample_dt_keyword = 'sample date', age_str = 'years', gender_str = 'sex',
+                            cyto_keyword = 'cyto no', specimen_keyword = 'specimen', diagnosis_keyword = 'diagnosis',
+                            hpe_no_keyword = 'hpe no', h_and_e_keyword = 'h&e',
+                            tils_keyword = ['stroma', 'infiltra'], tils_status_types = ['moderate', 'mild', 'marked', 'mononuclear'],
                             nottingham_grade_keyword = ['nottingham', 'nottingh'],
-                           nottingham_score_keyword = ['nottingham', 'nottingh'], er_keyword = 'estrogen', pr_keyword = 'progesterone',
-                           her2_keyword = 'her-2/neu', ki67_keyword = 'clone mib-1', ki67_specimen_keyword = 'paraffin')
+                            nottingham_score_keyword = ['nottingham', 'nottingh'], er_keyword = 'estrogen', pr_keyword = 'progesterone',
+                            her2_keyword = 'her-2/neu', ki67_keyword = 'clone mib-1', ki67_specimen_keyword = 'paraffin',
+                            tumour_diagnosis_keyword = ['invasive', 'infiltrating'], lympho_keyword = ['lympho', 'vascular', 'emboli'],
+                            dcis_keyword= ['duct carcinoma in situ', 'dcis'])
 
-ag_txt_folder_path = 'D:/Shweta/email/attachments_from_ag/txt_files'
-
-txt = get_report_text_into_list(os.path.join(ag_txt_folder_path, '118133370_0.txt'))
-
-writer = pd.ExcelWriter('D:/Shweta/path_reports/AG_output_df/2021_09_09_bx_cyto_ihc_ki67_data_with_file_txt_sk.xlsx',
+writer = pd.ExcelWriter('D:/Shweta/path_reports/all_biopsy/extracted_data/2022_02_03_bx_cyto_histo_ihc_ki67_data_sk.xlsx',
                         engine='xlsxwriter')
 
 cyto_df.to_excel(writer, sheet_name='cytology', index=False)
