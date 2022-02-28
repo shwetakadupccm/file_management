@@ -1,10 +1,32 @@
 import pandas as pd
 import os
+import re
+import datetime
+import shutil
 from fuzzywuzzy import process
 import datetime
 import dateparser
-import re
 
+def create_date_dir_move_file(source_path, destination_path, suffix, start_dt):
+    files = os.listdir(source_path)
+    for file in files:
+        if file.endswith(suffix):
+            match = re.search('\d{4}-\d{2}-\d{2}', file)
+            dt = datetime.datetime.strptime(match.group(), '%Y-%m-%d').date()
+            start_date = datetime.datetime.strptime(start_dt, '%Y-%m-%d').date()
+            if dt > start_date:
+                dt_path = os.path.join(destination_path, str(dt))
+                if not os.path.isdir(dt_path):
+                    os.mkdir(dt_path)
+                if not os.path.isfile(os.path.join(dt_path, file)):
+                    shutil.move(os.path.join(source_path, file), dt_path)
+
+source_path = 'D:/Shweta/ot_notes/2022_02_21_ot/2022_02_21_all'
+destination_path = 'D:/Shweta/ot_notes/2022_02_21_ot/2022_02_21_datewise'
+
+create_date_dir_move_file(source_path, destination_path, suffix = '.jpg', start_dt = '2021-08-02')
+
+##
 def find_date(sx_df, dt_str = 'Sx Date'):
     dts = []
     for sx_dt in sx_df[dt_str]:
@@ -65,9 +87,12 @@ def match_the_dates(path, sx_df, sx_images_dts, dt_str = 'Sx Date', sx_name_str 
                 destination = os.path.join(path, new_name)
                 os.rename(source, destination)
 
-sx_data = pd.read_excel('D:\\Shweta\\Surgery\\Surgery list 2021_sk.xlsx')
-sx_images_dt = os.listdir('D:\\2021_06_14_renamed')
+sx_images_dts = os.listdir(destination_path)
+sx_df = pd.read_excel('D:\\Shweta\\Surgery\\2022_02_22_surgery_master_list_sk.xlsx')
+match_the_dates(destination_path, sx_df, sx_images_dts, dt_str = 'surgery_date', sx_name_str = 'patient_name')
 
-matched_dates_and_names = match_the_dates('D:\\2021_06_14_renamed',
-                                          sx_data, sx_images_dt, dt_str = 'Date', sx_name_str = 'Patient Name')
+## classifing the ot data by patient names and adding the file_number into the folder
+
+folder_path = 'D:/Shweta/ot_notes/all_ot_notes'
+
 

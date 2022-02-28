@@ -13,7 +13,6 @@ def clean_names(df, name_str):
         cleaned_names.append(name)
     return cleaned_names
 
-
 def find_matched_name_file_num(source_file, test_file, source_name_str='patient_name', test_name_str='Patient Name',
                       source_file_str='file_number', test_file_str='File_Number'):
     clean_source = 'clean_' + source_name_str
@@ -43,19 +42,20 @@ def find_matched_name_file_num(source_file, test_file, source_name_str='patient_
                 True, False)
     return matched_df, source_clean_names, test_clean_names
 
-
 source_file_name = "2010_2018_name_file_number_whole.xlsx"
-test_file_name = "2021_01_25_PCCM_FFPE_blocks_1_672_RB.xlsx"
-folder = 'D:\\Shweta\\Patient_name_matching'
-source_path = os.path.join(folder, source_file_name)
-test_path = os.path.join(folder, test_file_name)
+test_file_name = "2021_22_07_trial_file_2021_sx_img_sk_sn.xlsx"
+folder_source = 'D:\\Shweta\\Patient_name_matching'
+folder_test = 'D:\\Shweta\\surgery_images_ss\\trial_files_sk'
+source_path = os.path.join(folder_source, source_file_name)
+test_path = os.path.join(folder_test, test_file_name)
 source_file = pd.read_excel(source_path)
 test_file = pd.read_excel(test_path)
 
-matched_names, source_clean_names, test_clean_names =find_matched_name_file_num(source_file, test_file, source_name_str='patient_name',
-                  test_name_str='Patient Name', source_file_str='file_number', test_file_str='File_Number')
+matched_names, source_clean_names, test_clean_names =find_matched_name_file_num(source_file, test_file,
+                                                        source_name_str='patient_name',
+                  test_name_str='patient_name', source_file_str='file_number', test_file_str='file_number')
 
-matched_names.to_excel(os.path.join(folder, '22_02_2021_names_file_number_score_partial_token_set.xlsx'))
+matched_names.to_excel(os.path.join(folder_test, '2021_23_07_names_file_number_score_partial_token_set.xlsx'))
 
 sum(matched_names['comparison']==True)
 sum(matched_names['comparison']==False)
