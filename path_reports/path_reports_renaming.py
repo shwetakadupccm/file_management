@@ -69,8 +69,28 @@ def get_patient_name(text_lst):
     cleaned_patient_name = re.sub(r'[^a-zA-Z ]', '', str(patient_name))
     cleaned_patient_name = re.sub('sid', '', cleaned_patient_name)
     cleaned_patient_name = re.sub('right side', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('right e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('left e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('lt e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('rt e', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('right ref', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('ref', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('c b', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('msconsult antonco sur', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('report', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('cb ms', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('md', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('or ', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('right', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('left', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('breast', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub(' ms', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('msconsultantonco sur', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('msconsult antonco sur', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('case number', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('consultantonco sur', '', cleaned_patient_name)
+    cleaned_patient_name = cleaned_patient_name.strip()
     if cleaned_patient_name is not None:
-        cleaned_patient_name = cleaned_patient_name.strip()
         return cleaned_patient_name
 
 def get_sid(text_lst, sid_keyword = 'sid'):
@@ -165,15 +185,31 @@ def get_report_data_of_all_pages(txt_folder_path, pdf_folder_path, sample_dt_key
                                                                 'report_type'])
     return output_df
 
-txt_folder_path = 'D:/Shweta/path_reports/all_biopsy/txt_files'
-pdf_folder_path = 'D:/Shweta/path_reports/all_biopsy/biopsy_reports'
+txt_folder_path = 'D:/Shweta/email/2022_03_01/AG/txt_files'
+pdf_folder_path = 'D:/Shweta/email/2022_03_01/AG/attachments'
 
 output_df = get_report_data_of_all_pages(txt_folder_path, pdf_folder_path, sample_dt_keyword = 'sample date')
 
-output_df.to_excel('D:/Shweta/path_reports/all_biopsy/output_df/2022_01_03_pdf_names_info.xlsx',
+output_df.to_excel('D:/Shweta/email/2022_03_01/AG/renaming_df/2022_03_04_pdf_names_info.xlsx',
                    index=False)
 
-df = pd.read_excel('D:/Shweta/email/attachments_from_jehangir/all_jehangir/output_df/2021_10_09_jeh_sx_data_for_renmaing_sk.xlsx')
+df = pd.read_excel('D:/Shweta/email/2022_03_03/AG/renaming_df/2022_03_04_pdf_names_info.xlsx', sheet_name='renaming_data')
+
+def make_new_file_name_for_ag_report(final_pdf_info_df):
+    new_names = []
+    for i in range(len(final_pdf_info_df)):
+        patient_name = final_pdf_info_df.iloc[i]['patient_name']
+        patient_name = patient_name.strip()
+        patient_name = patient_name.replace(' ', '_')
+        sample_date = final_pdf_info_df.iloc[i]['sample_date']
+        # sample_date = sample_date.date()
+        sample_date = re.sub('-', '_', str(sample_date))
+        new_name = patient_name + '_' + sample_date + '.pdf'
+        new_names.append(new_name)
+    final_pdf_info_df['new_pdf_name'] = new_names
+    return final_pdf_info_df
+
+df = make_new_file_name_for_ag_report(df)
 
 def make_new_file_name(final_pdf_info_df):
     new_names = []
@@ -191,26 +227,36 @@ def make_new_file_name(final_pdf_info_df):
 
 df = make_new_file_name(df)
 
-df.to_excel('D:/Shweta/email/attachments_from_jehangir/all_jehangir/output_df/2021_10_26_jeh_sx_report_names_sk.xlsx',
+
+df.to_excel('D:/Shweta/email/2022_03_03/AG/renaming_df/2022_03_04_pdf_names_info_new_names.xlsx',
             index=False)
 
 ## renaming golwilkar scanned reports
 
+# def rename_pdf_file_name(pdf_folder_path, pdf_info_df, destination_pdf_path):
+#     pdf_file_names = pdf_info_df['file_name']
+#     pdf_file_new_names = pdf_info_df['new_pdf_name']
+#     try:
+#         for index, pdf_file_name in enumerate(pdf_file_names):
+#             source_path = os.path.join(pdf_folder_path, pdf_file_name)
+#             new_pdf_name = pdf_file_new_names[index]
+#             shutil.copy(source_path, os.path.join(destination_pdf_path, new_pdf_name))
+#             print('renamed_and_copied')
+#     except FileNotFoundError:
+#         print('file_not_found')
+
+destination_path = 'D:/Shweta/email/2022_03_01/AG/renamed_reports'
+
 def rename_pdf_file_name(pdf_folder_path, pdf_info_df, destination_pdf_path):
-    pdf_file_names = pdf_info_df['pdf_file_name']
+    pdf_file_names = pdf_info_df['file_name']
     pdf_file_new_names = pdf_info_df['new_pdf_name']
-    try:
-        for index, pdf_file_name in enumerate(pdf_file_names):
-            source_path = os.path.join(pdf_folder_path, pdf_file_name)
-            new_pdf_name = pdf_file_new_names[index]
-            shutil.copy(source_path, os.path.join(destination_pdf_path, new_pdf_name))
-            print('renamed_and_copied')
-    except FileNotFoundError:
-        print('file_not_found')
+    for index, pdf_file_name in enumerate(pdf_file_names):
+        source_path = os.path.join(pdf_folder_path, pdf_file_name)
+        new_pdf_name = pdf_file_new_names[index]
+        shutil.copy(source_path, os.path.join(destination_pdf_path, new_pdf_name))
+        print('renamed_and_copied')
 
-destination_path = 'D:/Shweta/email/attachments_from_jehangir/all_jehangir/renamed_pdf_with_type'
-
-rename_pdf_file_name('D:/Shweta/email/attachments_from_jehangir/all_jehangir/pdf_files', df, destination_path)
+rename_pdf_file_name('D:/Shweta/path_reports/all_biopsy/biopsy_reports', df, destination_path)
 
 def sort_pdf_year_wise_and_copy(renamed_pdf_folder_path, destination_pdf_path):
     pdf_files = os.listdir(renamed_pdf_folder_path)
@@ -227,8 +273,8 @@ def sort_pdf_year_wise_and_copy(renamed_pdf_folder_path, destination_pdf_path):
                 shutil.copy(source_path, new_dest)
                 print('file_copied')
 
-sort_pdf_year_wise_and_copy(destination_path,
-                            'D:/Shweta/email/attachments_from_jehangir/all_jehangir/year_wise_report_with_type')
+# sort_pdf_year_wise_and_copy('D:/Shweta/path_reports/all_biopsy/renamed_files',
+#                             'D:/Shweta/path_reports/all_biopsy/sorted_year_wise')
 
 def rename_pdf_file_name_by_patient_name_date(pdf_folder_path, pdf_info_df, destination_pdf_path):
     pdf_file_names = pdf_info_df['file_name']
@@ -249,10 +295,4 @@ def rename_pdf_file_name_by_patient_name_date(pdf_folder_path, pdf_info_df, dest
 destination_pdf_path = 'D:/Shweta/email/attachments_from_ag/date_wise_reports'
 
 rename_pdf_file_name_by_patient_name_date(pdf_folder_path, output_df, destination_pdf_path)
-
-
-
-
-
-
 

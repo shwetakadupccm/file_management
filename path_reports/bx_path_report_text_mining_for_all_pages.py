@@ -97,6 +97,7 @@ def get_patient_name(text_lst):
     cleaned_patient_name = re.sub('msconsultantonco sur', '', cleaned_patient_name)
     cleaned_patient_name = re.sub('msconsult antonco sur', '', cleaned_patient_name)
     cleaned_patient_name = re.sub('case number', '', cleaned_patient_name)
+    cleaned_patient_name = re.sub('consultantonco sur', '', cleaned_patient_name)
     cleaned_patient_name = cleaned_patient_name.strip()
     if cleaned_patient_name is not None:
         return cleaned_patient_name

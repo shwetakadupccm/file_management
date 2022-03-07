@@ -8,12 +8,12 @@ from docx.shared import Pt
 from docx2pdf import convert
 from fpdf import FPDF
 
-qr_code_path = 'D:/Shweta/data_digitization/sample_from_HR/549_16'
-report_names_df = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
-                                sheet_name='report_types')
-master_list = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
-                            sheet_name='master_list')
-destination_path = 'D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code'
+# qr_code_path = 'D:/Shweta/data_digitization/sample_from_HR/549_16'
+# report_names_df = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
+#                                 sheet_name='report_types')
+# master_list = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
+#                             sheet_name='master_list')
+# destination_path = 'D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code'
 
 def add_qr_code_in_word_doc(report_type_df_path, qr_code_path, destination_path, master_list):
     for index, report_type in enumerate(report_type_df_path['report_types']):
@@ -61,7 +61,7 @@ def add_qr_code_in_word_doc(report_type_df_path, qr_code_path, destination_path,
             doc_name = str(report_type_no) + '_' + report_type + '.docx'
             doc.save(os.path.join(dir_path, doc_name))
 
-add_qr_code_in_word_doc(report_names_df, dummy_img, destination_path, master_list)
+# add_qr_code_in_word_doc(report_names_df, dummy_img, destination_path, master_list)
 
 ##
 
@@ -150,6 +150,7 @@ def add_qr_code(qr_folder_path, master_list, destination_path):
             doc.save(os.path.join(dir_path, report_type))
 
 ##
+
 def create_dummy_pdf_for_reports(report_type, dir_path):
     pdf = FPDF()
     pdf.add_page()
@@ -177,6 +178,7 @@ def add_dummy_reports_(source_path, destination_path):
         pdf_path = os.path.join(destination_path, pdf_report_name)
         convert(doc_path, pdf_path)
         create_dummy_pdf_for_reports(dir_name, destination_path)
+
 
 # add_dummy_reports_('D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code/549_16',
 #                    'D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code/added_dummy_reports')
