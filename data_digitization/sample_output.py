@@ -8,12 +8,12 @@ from docx.shared import Pt
 from docx2pdf import convert
 from fpdf import FPDF
 
-# qr_code_path = 'D:/Shweta/data_digitization/sample_from_HR/549_16'
-# report_names_df = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
-#                                 sheet_name='report_types')
-# master_list = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
-#                             sheet_name='master_list')
-# destination_path = 'D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code'
+qr_code_folder_path = 'D:/Shweta/data_digitization/sample_from_HR/549_16'
+report_names_df = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
+                                sheet_name='report_types')
+master_list = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
+                            sheet_name='master_list')
+destination_path = 'D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code'
 
 def add_qr_code_in_word_doc(report_type_df_path, qr_code_path, destination_path, master_list):
     for index, report_type in enumerate(report_type_df_path['report_types']):

@@ -9,12 +9,17 @@ from docx2pdf import convert
 from fpdf import FPDF
 
 class DataDigitization:
-    def __init__(self, report_type_df, qr_code_folder_path, master_list, qr_code_id_folder_path, destination_path):
-        self.report_type_df = report_type_df
-        self.qr_code_folder_path = qr_code_folder_path
-        self.master_list = master_list
-        self.qr_code_id_folder_path = qr_code_id_folder_path
-        self.destination_path = destination_path
+
+    def __init__(self, root):
+        self.root = root
+        self.report_names_df = pd.read_excel(
+            os.path.join(self.root, 'reference_docs/Report_types_17.xlsx'))
+        # make master_list a separate xls
+        self.master_list = pd.read_excel(os.path.join(self.root, 'reference_docs/2022_03_07_patient_master_list_dummy.xlsx'))
+        self.coded_data = os.path.join(self.root, '2022_03_07_coded_data')
+        self.qr_code_folder_path = 'D:/Shweta/data_digitization/sample_from_HR/549_16'
+        self.tmp = os.path.join(self.root, 'tmp')
+        self.file = os.path.join(self.root, 'scanned_files')
 
     def add_qr_code(self):
         qr_codes = os.listdir(self.qr_code_folder_path)
@@ -42,7 +47,7 @@ class DataDigitization:
                 dob = 'Date_of_Birth: ' + str(self.master_list['date_of_birth'][i])
                 dir = self.master_list['file_number'][i]
                 dir = re.sub('/', '_', str(dir))
-                dir_path = os.path.join(self.qr_code_id_folder_path, dir)
+                dir_path = os.path.join(self.coded_data, dir)
                 if not os.path.isdir(dir_path):
                     os.mkdir(dir_path)
                 blank_para = doc.add_paragraph()
@@ -64,31 +69,40 @@ class DataDigitization:
                 report_type = re.sub('.png', '.docx', str(qr_code))
                 report_type = report_type.lower()
                 doc_name = report_type + '.docx'
-                doc.save(os.path.join(dir_path, doc_name))
-                return dir_path
+                doc.save(os.path.join(self.coded_data, doc_name))
+
+        # restart from here.
+
+    def add_report_data(self, qr_label):
+        reports = os.listdir(qr_label)
+        for report in reports:
+            print(report)
+            report_name = re.sub('.docx', '', str(report))
+            print(report_name)
+            each_report_dir = (os.path.join(self.tmp), report_name)
+            os.mkdir(each_report_dir)
+            doc_path = os.path.join(self.tmp, report_name)
+            print(doc_path)
+            pdf_report_name = re.sub('[^0-9]', '', str(report_name))
+            pdf_report_name = pdf_report_name + '_code.pdf'
+            pdf_path = os.path.join(each_report_dir, pdf_report_name)
+            convert(doc_path, pdf_path)
+            self.create_dummy_images_for_reports(dir_name, each_report_dir)
 
     @staticmethod
-    def create_dummy_pdf_for_reports(report_type, dir_path):
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font('Arial', size=28)
-        text_letter = re.sub('[^a-z_]', '', str(report_type))
+    def create_dummy_images_for_reports(report_type, dir_path):
         for i in range(5):
-            text = text_letter[2:] + '_' + str(i)
-            pdf.cell(200, 10, txt=text, ln=1, align='C')
+            pdf = FPDF()
             pdf.add_page()
+            pdf.set_font('Arial', size=28)
+            text_letter = re.sub('[^a-z_]', '', str(self.report_type))
+            print(text_letter)
+            text = text_letter[1:] + '_' + str(i)
+            pdf.cell(200, 10, txt=text, ln=1, align='C')
             report_type = re.sub('[^a-z_]', '', str(report_type))
-        pdf_name = report_type[2:] + '.pdf'
-        pdf.output(os.path.join(dir_path, pdf_name))
+            pdf_name = report_type[1:] + '_' + str(i) + '.pdf'
+            pdf.output(os.path.join(dir_path, pdf_name))
 
-    def add_dummy_reports_(self):
-        reports = os.listdir(self.qr_code_id_folder_path)
-        for report in reports:
-            dir_name = re.sub('.docx', '', str(report))
-            doc_path = os.path.join(self.qr_code_id_folder_path, report)
-            # pdf_report_name = re.sub('[^0-9_]', '', str(report))
-            pdf_report_name = dir_name + '_code.pdf'
-            pdf_path = os.path.join(self.destination_path, pdf_report_name)
-            convert(doc_path, pdf_path)
-            self.create_dummy_pdf_for_reports(dir_name, self.destination_path)
-
+    # def extract_report_data_from_file(self):
+    # scanned data either as images or as pdf
+    # excel of categorised data - dk to send now
