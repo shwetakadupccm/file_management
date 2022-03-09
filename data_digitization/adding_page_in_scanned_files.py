@@ -1,3 +1,5 @@
+import math
+import numpy as np
 import pandas as pd
 # from PyPDF2 import PdfFileReader
 import os
@@ -21,8 +23,9 @@ qr_code_path = os.path.join(root, 'sample_from_HR/549_16')
 tmp_folder = os.path.join(root, 'tmp')
 scanned_files = os.path.join(root, 'scanned_patient_files\original_pdf')
 splitted_scanned_files = os.path.join(root, 'scanned_patient_files/spplitted_pdf_to_img')
-scanned_file_log_df = pd.read_excel(os.path.join(root, 'D:/Shweta/data_digitization/reference_docs/2022_02_09_Data_digitzation_scanned_files_dk.xlsx'))
-
+scanned_file_log_df = pd.read_excel(os.path.join(root, 'reference_docs/2022_02_09_Data_digitzation_scanned_files_dk.xlsx'))
+col_heads = pd.read_excel(os.path.join(root, 'reference_docs/2022_02_09_Data_digitzation_scanned_files_dk.xlsx'),
+                          sheet_name='col_heads')
 ## adding qr code
 
 def add_qr_code_id_data(qr_code_folder_path, master_list, coded_data):
@@ -77,7 +80,7 @@ def add_qr_code_id_data(qr_code_folder_path, master_list, coded_data):
 
 ## converting pdf to jpg image
 
-def convert_pdf_to_images(scanned_files_path, splitted_scan_files):
+def split_pdf_by_images(scanned_files_path, splitted_scan_files):
     scanned_files = os.listdir(scanned_files_path)
     for scanned_file in scanned_files:
         print(scanned_file)
@@ -100,10 +103,10 @@ def convert_pdf_to_images(scanned_files_path, splitted_scan_files):
                 i += 1
             print("file number: ", file_num + " split")
 
-##
-def pick_images_by_index(index, file_img_lst):
-    patient_info_pages =
+split_pdf_by_images('D:/Shweta/data_digitization/scanned_patient_files/original_pdf',
+                    'D:/Shweta/data_digitization/scanned_patient_files/spplitted_pdf_to_img')
 
+##
 def get_image_no(file_number, file_images_lst):
     file_images_no_lst = []
     for file_image in file_images_lst:
@@ -114,36 +117,77 @@ def get_image_no(file_number, file_images_lst):
         file_images_no_lst.append(file_image_no)
     return file_images_no_lst
 
-def classify_images_by_report_type(splitted_scanned_files_path, file_categorization_df):
+def split_report_page_no(report_page_no):
+    if isinstance(report_page_no, float):
+        page_no_lst = []
+        if not math.isnan(report_page_no):
+            integer = int(report_page_no)
+            page_no_lst.append(str(integer))
+        return page_no_lst
+    elif isinstance(report_page_no, int):
+        page_no_lst = []
+        page_no_lst.append(str(report_page_no))
+        return page_no_lst
+    elif ';' in report_page_no:
+        page_no_lst = []
+        report_page_no_splitted = report_page_no.split(';')
+        for page_no in report_page_no_splitted:
+            if '|' in page_no:
+                partitions = page_no.partition('|')
+                start = int(partitions[0])
+                end = int(partitions[2]) + 1
+                page_nos = np.arange(start, end)
+                page_nos_lst = page_nos.tolist()
+                for no in page_nos_lst:
+                    page_no_lst.append(str(no))
+            else:
+                page_no_lst.append(str(page_no))
+        return page_no_lst
+    elif '|' in report_page_no:
+        page_no_lst = []
+        partitions = report_page_no.partition('|')
+        start = int(partitions[0])
+        end = int(partitions[2]) + 1
+        page_nos = np.arange(start, end)
+        page_nos_lst = page_nos.tolist()
+        for no in page_nos_lst:
+            page_no_lst.append(str(no))
+        return page_no_lst
+    elif type(report_page_no) in (float, int):
+        page_no_lst = []
+        report_page_no = int(report_page_no)
+        page_no_lst.append(str(report_page_no))
+        return page_no_lst
+    else:
+        page_no_lst = []
+        page_no_lst.append(str(report_page_no))
+        return page_no_lst
+
+def categorize_scanned_file_by_report_types(splitted_scanned_files_path, file_categorization_df, file_categorization_df_col_heads):
     splitted_scanned_files = os.listdir(splitted_scanned_files_path)
+    report_types = file_categorization_df_col_heads['report_types']
     for index, file_number in enumerate(file_categorization_df['File Number']):
         if file_number in splitted_scanned_files:
             img_lst = os.listdir(os.path.join(splitted_scanned_files_path, file_number))
-            print(img_lst)
             img_no_lst = get_image_no(file_number, img_lst)
-            patient_info_page_no = file_categorization_df.iloc[index]['01_patient information']
-            patient_info_page_no_splitted = patient_info_page_no.split(';')
-            print(patient_info_page_no)
-            patient_info_dir = os.path.join(splitted_scanned_files_path, '01_patient information')
-            if not os.path.isdir(patient_info_dir):
-                os.mkdir(patient_info_dir)
-            for patient_info_page_no in patient_info_page_no_splitted:
-                if patient_info_page_no in img_no_lst:
-                    print(patient_info_page_no)
-                    patient_info_page_name = str(file_number) + '_' + str(patient_info_page_no) + '.jpg'
-                    all_pages_dir = os.path.join(splitted_scanned_files_path, str(file_number))
-                    source_path = os.path.join(all_pages_dir, patient_info_page_name)
-                    destination_path = os.path.join(patient_info_dir, patient_info_page_name)
-                    shutil.move(source_path, destination_path)
-                    print('file_moved')
+            for report_type in report_types:
+                print(report_type)
+                report_page_no = file_categorization_df.iloc[index][report_type]
+                print(report_page_no)
+                report_page_no_splitted = split_report_page_no(report_page_no)
+                file_no_dir = os.path.join(splitted_scanned_files_path, file_number)
+                report_dir = os.path.join(file_no_dir, report_type)
+                if not os.path.isdir(report_dir):
+                    os.mkdir(report_dir)
+                for page_no in report_page_no_splitted:
+                    if page_no in img_no_lst:
+                        report_page_name = str(file_number) + '_' + str(page_no) + '.jpg'
+                        print(report_page_name)
+                        all_pages_dir = os.path.join(splitted_scanned_files_path, str(file_number))
+                        source_path = os.path.join(all_pages_dir, report_page_name)
+                        destination_path = os.path.join(report_dir, report_page_name)
+                        shutil.copy(source_path, destination_path)
+                        print('image_moved')
 
-
-classify_images_by_report_type(splitted_scanned_files, scanned_file_log_df)
-
-
-
-
-
-
-
+categorize_scanned_file_by_report_types(splitted_scanned_files, scanned_file_log_df, col_heads)
 
