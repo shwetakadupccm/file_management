@@ -17,7 +17,6 @@ class DataDigitization:
     def __init__(self, root):
         self.root = root
         self.report_names_df = pd.read_excel(os.path.join(self.root, 'source/Report_types_17.xlsx'))
-        # make master_list a separate xls
         self.master_list = pd.read_excel(os.path.join(self.root, 'source/2022_03_07_patient_master_list_dummy.xlsx'))
         self.coded_data = os.path.join(self.root, 'output/coded_data')
         self.qr_code_folder_path = os.path.join(self.root, 'sample_from_HR/549_16')
@@ -74,6 +73,7 @@ class DataDigitization:
                 report_type = report_type.lower()
                 doc_name = report_type + '.docx'
                 doc.save(os.path.join(dir_path, doc_name))
+                return dir_path
 
     @staticmethod
     def create_dummy_pdf_for_reports(report_type, dir_path):
@@ -106,6 +106,7 @@ class DataDigitization:
             pdf.output(os.path.join(dir_path, pdf_name))
 
     ## this function creates a separate directory for each report type and then add the dummy data in it
+
     def add_report_data(self, qr_label):
         reports = os.listdir(qr_label)
         for report in reports:

@@ -29,7 +29,7 @@ def add_qr_code(dummy_qr_folder_path, master_list, destination_path):
         qr_code = qr_code.lower()
         report_name = re.sub('[^a-z_.]', '', str(qr_code))
         report_name = re.sub('.png', '', report_name)
-        report_name = report_name[4:]
+        report_name = report_name[1:]
         text = doc.add_paragraph()
         report_type_name = text.add_run(report_name)
         report_type_name.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
@@ -67,8 +67,9 @@ def add_qr_code(dummy_qr_folder_path, master_list, destination_path):
             # doc_name = report_type + '.docx'
             doc.save(os.path.join(dir_path, report_type))
 
-add_qr_code('D:/Shweta/data_digitization/qr_code_creation/qr_codes_by_subfolder',
-            master_list, 'D:/Shweta/data_digitization/sample_output/2022_03_10/added_id_info/coded_data_for_subfolders')
+# add_qr_code('D:/Shweta/data_digitization/qr_code_creation/qr_codes_by_subfolder',
+#             master_list, 'D:/Shweta/data_digitization/sample_output/2022_03_10/added_id_info/coded_data_for_subfolders')
+
 
 def create_dummy_pdf_for_reports(report_type, dir_path):
     pdf = FPDF()
@@ -85,7 +86,48 @@ def create_dummy_pdf_for_reports(report_type, dir_path):
     pdf_name = report_type[2:] + '.pdf'
     pdf.output(os.path.join(dir_path, pdf_name))
 
-def add_dummy_reports(source_path, destination_path):
+# def add_dummy_reports(source_path, destination_path):
+#     reports = os.listdir(source_path)
+#     for report in reports:
+#         print(report)
+#         dir_name = re.sub('.docx', '', str(report))
+#         print(dir_name)
+#         each_report_dir = os.path.join(destination_path, dir_name)
+#         os.mkdir(each_report_dir)
+#         doc_path = os.path.join(source_path, report)
+#         print(doc_path)
+#         pdf_report_name = re.sub('[^0-9_]', '', str(report))
+#         print(pdf_report_name)
+#         pdf_report_name = pdf_report_name[:-1] + '_code.pdf'
+#         pdf_path = os.path.join(each_report_dir, pdf_report_name)
+#         convert(doc_path, pdf_path)
+#         report_type = re.sub('[^a-z_]', '', str(dir_name))
+#         if report_type[2:] == 'patient_information':
+#             sub_dir_pccm_form = os.path.join(each_report_dir, 'PCCM_form')
+#             os.mkdir(sub_dir_pccm_form)
+#             create_dummy_pdf_for_reports('__pccm_form', sub_dir_pccm_form)
+#             sub_dir_id_proofs = os.path.join(each_report_dir, 'ID_proofs')
+#             os.mkdir(sub_dir_id_proofs)
+#             create_dummy_pdf_for_reports('__id_proof', sub_dir_id_proofs)
+#         elif report_type[2:] == 'radiology':
+#             sub_dir_screening = os.path.join(each_report_dir, 'screening')
+#             os.mkdir(sub_dir_screening)
+#             create_dummy_pdf_for_reports('__screening', sub_dir_screening)
+#             sub_dir_diagnosis = os.path.join(each_report_dir, 'diagnosis')
+#             os.mkdir(sub_dir_diagnosis)
+#             create_dummy_pdf_for_reports('__diagnosis', sub_dir_diagnosis)
+#             sub_dir_nact = os.path.join(each_report_dir, 'nact')
+#             os.mkdir(sub_dir_nact)
+#             sub_dir_nact_pre = os.path.join(sub_dir_nact, 'pre')
+#             os.mkdir(sub_dir_nact_pre)
+#             create_dummy_pdf_for_reports('__pre_nact', sub_dir_nact_pre)
+#             sub_dir_nact_post = os.path.join(sub_dir_nact, 'post')
+#             os.mkdir(sub_dir_nact_post)
+#             create_dummy_pdf_for_reports('__post_nact', sub_dir_nact_post)
+#         else:
+#             create_dummy_pdf_for_reports(dir_name, each_report_dir)
+
+def add_dummy_reports(source_path, destination_path, qr_subfolder):
     reports = os.listdir(source_path)
     for report in reports:
         print(report)
@@ -102,29 +144,58 @@ def add_dummy_reports(source_path, destination_path):
         convert(doc_path, pdf_path)
         report_type = re.sub('[^a-z_]', '', str(dir_name))
         if report_type[2:] == 'patient_information':
-            sub_dir_pccm_form = os.path.join(each_report_dir, 'PCCM_form')
+            subfolder_name_1 = 'PCCM_form'
+            sub_dir_pccm_form = os.path.join(each_report_dir, subfolder_name_1)
             os.mkdir(sub_dir_pccm_form)
+            sub_folder_qr_name = '01_patient infromation_pccm form.docx'
+            subfolder_qr_path = os.path.join(qr_subfolder, sub_folder_qr_name)
+            sub_folder_pdf = os.path.join(sub_dir_pccm_form, 'pccm_form_code.pdf')
+            convert(subfolder_qr_path, sub_folder_pdf)
             create_dummy_pdf_for_reports('__pccm_form', sub_dir_pccm_form)
-            sub_dir_id_proofs = os.path.join(each_report_dir, 'ID_proofs')
+            subfolder_name_2 = 'ID_proofs'
+            sub_dir_id_proofs = os.path.join(each_report_dir, subfolder_name_2)
             os.mkdir(sub_dir_id_proofs)
-            create_dummy_pdf_for_reports('__id_proof', sub_dir_id_proofs)
+            sub_folder_qr_name = '01_patient infromation_id proofs.docx'
+            subfolder_qr_path = os.path.join(qr_subfolder, sub_folder_qr_name)
+            sub_folder_pdf = os.path.join(sub_dir_id_proofs, 'id_proofs_code.pdf')
+            convert(subfolder_qr_path, sub_folder_pdf)
+            create_dummy_pdf_for_reports('__id_proofs', sub_dir_id_proofs)
         elif report_type[2:] == 'radiology':
+            convert(doc_path, pdf_path)
             sub_dir_screening = os.path.join(each_report_dir, 'screening')
             os.mkdir(sub_dir_screening)
+            sub_folder_qr_name = '03_radiology_screening.docx'
+            subfolder_qr_path = os.path.join(qr_subfolder, sub_folder_qr_name)
+            sub_folder_pdf = os.path.join(sub_dir_screening, 'screening_code.pdf')
+            convert(subfolder_qr_path, sub_folder_pdf)
             create_dummy_pdf_for_reports('__screening', sub_dir_screening)
             sub_dir_diagnosis = os.path.join(each_report_dir, 'diagnosis')
             os.mkdir(sub_dir_diagnosis)
+            sub_folder_qr_name = '03_radiology_diagnosis.docx'
+            subfolder_qr_path = os.path.join(qr_subfolder, sub_folder_qr_name)
+            sub_folder_pdf = os.path.join(sub_dir_diagnosis, 'diagnosis_code.pdf')
+            convert(subfolder_qr_path, sub_folder_pdf)
             create_dummy_pdf_for_reports('__diagnosis', sub_dir_diagnosis)
             sub_dir_nact = os.path.join(each_report_dir, 'nact')
             os.mkdir(sub_dir_nact)
             sub_dir_nact_pre = os.path.join(sub_dir_nact, 'pre')
             os.mkdir(sub_dir_nact_pre)
+            sub_folder_qr_name = '03_radiology_pre_nact.docx'
+            subfolder_qr_path = os.path.join(qr_subfolder, sub_folder_qr_name)
+            sub_folder_pdf = os.path.join(sub_dir_nact_pre, 'pre_nact_code.pdf')
+            convert(subfolder_qr_path, sub_folder_pdf)
             create_dummy_pdf_for_reports('__pre_nact', sub_dir_nact_pre)
             sub_dir_nact_post = os.path.join(sub_dir_nact, 'post')
             os.mkdir(sub_dir_nact_post)
+            sub_folder_qr_name = '03_radiology_post_nact.docx'
+            subfolder_qr_path = os.path.join(qr_subfolder, sub_folder_qr_name)
+            sub_folder_pdf = os.path.join(sub_dir_nact_post, 'post_nact_code.pdf')
+            convert(subfolder_qr_path, sub_folder_pdf)
             create_dummy_pdf_for_reports('__post_nact', sub_dir_nact_post)
         else:
             create_dummy_pdf_for_reports(dir_name, each_report_dir)
 
-add_dummy_reports(coded_data, destination_path)
+add_dummy_reports('D:/Shweta/data_digitization/sample_output/2022_03_11/coded_data_for_parent_folders/549_16',
+                  'D:/Shweta/data_digitization/sample_output/2022_03_11/added_dummy_reports',
+                  'D:/Shweta/data_digitization/sample_output/2022_03_11/coded_data_for_subfolders/549_16')
 
