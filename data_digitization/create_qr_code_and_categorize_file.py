@@ -86,7 +86,7 @@ def split_pdf_by_images(file_number, scanned_files_path, splitted_file_path):
     pdf_file_name = str(file_number) + '.pdf'
     scanned_file_path = os.path.join(scanned_files_path, pdf_file_name)
     pages = convert_from_path(scanned_file_path, 500,
-                                      poppler_path = 'C:/Program Files/poppler-0.68.0/bin')
+                                  poppler_path = 'C:/Program Files/poppler-0.68.0/bin')
     i = 0
     for index, page in enumerate(pages):
         if i == index:
@@ -155,25 +155,6 @@ def split_report_page_no(report_page_no):
         page_no_lst.append(str(report_page_no))
         return page_no_lst
 
-
-# def classify_file_images_by_report_types(splitted_scanned_file_path, report_page_nums, file_number, report_type, destination_path):
-#     splitted_scanned_files = os.listdir(splitted_scanned_file_path)
-#     img_no_lst = get_image_no(file_number, splitted_scanned_files)
-#     report_page_no_splitted = split_report_page_no(report_page_nums)
-#     report_page_count = len(report_page_no_splitted)
-#     file_no_dir = os.path.join(destination_path, str(file_number))
-#     if not os.path.isdir(file_no_dir):
-#         os.mkdir(file_no_dir)
-#     report_dir = os.path.join(file_no_dir, report_type)
-#     if not os.path.isdir(report_dir):
-#         os.mkdir(report_dir)
-#     for page_no in report_page_no_splitted:
-#         if page_no in img_no_lst:
-#             report_page_name = str(file_number) + '_' + str(page_no) + '.jpg'
-#             source_path = os.path.join(splitted_scanned_file_path, report_page_name)
-#             dest_path = os.path.join(report_dir, report_page_name)
-#             shutil.copy(source_path, dest_path)
-
 def classify_file_images_by_report_types(splitted_scanned_file_path, report_page_nums, file_number, report_type, destination_path):
     splitted_scanned_files = os.listdir(splitted_scanned_file_path)
     img_no_lst = get_image_no(file_number, splitted_scanned_files)
@@ -190,6 +171,10 @@ def classify_file_images_by_report_types(splitted_scanned_file_path, report_page
             source_path = os.path.join(splitted_scanned_file_path, report_page_name)
             dest_path = os.path.join(report_dir, report_page_name)
             shutil.copy(source_path, dest_path)
+
+classify_file_images_by_report_types('D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/splitted_pdf/38_10',
+                                     '2;47;48;50|52;54;55', '38_10', '01_patient_information',
+                                     'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/categorized_imgs')
 
 def rename_images(dir_path, file_no, report_type, destination_path):
     report_dir = os.path.join(dir_path, str(report_type))
@@ -208,9 +193,9 @@ def rename_images(dir_path, file_no, report_type, destination_path):
         shutil.copy(old_file_path, dest_path)
         print('report_renamed')
 
-rename_images('D:/Shweta/data_digitization/sample_output/2022_03_14/classfied_files/38_10',
+rename_images('D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/categorized_imgs/38_10',
               '38_10', '01_patient_information',
-              'D:/Shweta/data_digitization/scanned_patient_files/2022_03_14/categorrized_and_renamed_files')
+              'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/classified_and_renamed')
 
 # classify_file_images_by_report_types('D:/Shweta/data_digitization/sample_output/2022_03_14/splitted_files/38_10',
 #                                      '2;47;48;50|52;54;55', '38_10', '01_patient_information',
@@ -258,9 +243,9 @@ def categorize_file_by_report_types(report_names_df, categorized_files_df, split
             rename_images(renamed_files_path, str(file_number), report_type_str, destination_path)
             print('file: ' + file_number + ' classified by report types and arranged by sequence')
 
-# categorize_file_by_report_types(report_names_df, categorized_files_df,
-#                                 'D:/Shweta/data_digitization/sample_output/2022_03_14/splitted_files',
-#                                 'D:/Shweta/data_digitization/sample_output/2022_03_14',
-#                                 'D:/Shweta/data_digitization/scanned_patient_files/2022_03_14/categorized_and_renamed_files')
+categorize_file_by_report_types(report_names_df, categorized_files_df,
+                                'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/splitted_pdf',
+                                'D:/Shweta/data_digitization/sample_output/2022_03_15',
+                                'D:/Shweta/data_digitization/sample_output/2022_03_15/destination_path')
 
 

@@ -103,8 +103,8 @@ def split_pdf_by_images(scanned_files_path, splitted_scan_files):
                 i += 1
             print("file number: ", file_num + " split")
 
-split_pdf_by_images('D:/Shweta/data_digitization/scanned_patient_files/original_pdf',
-                    'D:/Shweta/data_digitization/scanned_patient_files/spplitted_pdf_to_img')
+split_pdf_by_images('D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/original_pdf',
+                    'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/splitted_pdf')
 
 ##
 def get_image_no(file_number, file_images_lst):
