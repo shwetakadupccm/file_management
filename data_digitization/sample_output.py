@@ -7,12 +7,13 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from docx2pdf import convert
 from fpdf import FPDF
+import pyqrcode
+import datetime
 
-qr_code_path = 'D:/Shweta/data_digitization/sample_from_HR/549_16'
+qr_code_folder_path = 'D:/Shweta/data_digitization/sample_from_HR/549_16'
 report_names_df = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
                                 sheet_name='report_types')
-master_list = pd.read_excel('D:/Shweta/data_digitization/reference_docs/Report_types_17.xlsx',
-                            sheet_name='master_list')
+master_list = pd.read_excel('D:/Shweta/data_digitization/reference_docs/2022_03_07_patient_master_list_dummy.xlsx')
 destination_path = 'D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code'
 
 def add_qr_code_in_word_doc(report_type_df_path, qr_code_path, destination_path, master_list):
@@ -109,7 +110,7 @@ def add_qr_code(qr_folder_path, master_list, destination_path):
         last_paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         qr_code = str(qr_code)
         qr_code = qr_code.lower()
-        report_name = re.sub('[^a-z_.]', '', str(qr_code))
+        report_name = re.sub('[^a-z_. ]', '', str(qr_code))
         report_name = re.sub('.png', '', report_name)
         report_name = report_name[2:]
         text = doc.add_paragraph()
@@ -150,6 +151,9 @@ def add_qr_code(qr_folder_path, master_list, destination_path):
             doc.save(os.path.join(dir_path, report_type))
 
 ##
+add_qr_code(qr_code_folder_path,
+            master_list, 'D:/Shweta/data_digitization/sample_output/2022_03_11/coded_data_for_parent_folders')
+
 def create_dummy_pdf_for_reports(report_type, dir_path):
     pdf = FPDF()
     pdf.add_page()
@@ -157,7 +161,8 @@ def create_dummy_pdf_for_reports(report_type, dir_path):
     text_letter = re.sub('[^a-z_]', '', str(report_type))
     print(text_letter)
     for i in range(5):
-        text = text_letter[2:] + '_' + str(i)
+        report_no = i+1
+        text = text_letter[2:] + '_' + str(report_no)
         pdf.cell(200, 10, txt=text, ln=1, align='C')
         pdf.add_page()
         report_type = re.sub('[^a-z_]', '', str(report_type))
@@ -169,14 +174,41 @@ def add_dummy_reports_(source_path, destination_path):
     for report in reports:
         print(report)
         dir_name = re.sub('.docx', '', str(report))
-        print(dir_name)
         doc_path = os.path.join(source_path, report)
-        print(doc_path)
         # pdf_report_name = re.sub('[^0-9_]', '', str(report))
         pdf_report_name = dir_name + '_code.pdf'
         pdf_path = os.path.join(destination_path, pdf_report_name)
         convert(doc_path, pdf_path)
         create_dummy_pdf_for_reports(dir_name, destination_path)
+
+
+add_dummy_reports_('D:/Shweta/data_digitization/sample_output/2022_03_10/added_id_info/549_16',
+                   'D:/Shweta/data_digitization/sample_output/2022_03_10/added_id_info/added_dummy_reports')
+
+def make_current_datetime_qr_code(datetime_qr_folder):
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    qr = pyqrcode.create(now)
+    qr_name = re.sub(' ', '_', str(now))
+    qr_name = re.sub('-', '_', qr_name)
+    qr_name = re.sub(':', '_', qr_name)
+    qr_file = qr_name + '.png'
+    qr_path = os.path.join(datetime_qr_folder, qr_file)
+    qr.png(qr_path, scale=8)
+    print('QR_code ' + now + ' created')
+
+def make_qr_code(master_list, report_type, subfolder, destination):
+    for i in range(len(master_list)):
+        file_number = master_list.file_number[i]
+        file_number_str = re.sub('_', '/', str(file_number))
+        mr_number = master_list.mr_number[i]
+        qr_code = file_number_str + '_' + str(mr_number) + '_' + str(report_type) + '_' + str(subfolder)
+        qr = pyqrcode.create(qr_code)
+        qr_img_name = str(report_type) + '_' + str(subfolder) + '.png'
+        qr_path = os.path.join(destination, qr_img_name)
+        qr.png(qr_path, scale=4)
+        print('QR code created for ' + file_number + ' ' + report_type + ' ' + subfolder)
+
+make_qr_code(master_list, '03 Radiology', 'Post NACT', 'D:/Shweta/data_digitization/sample_output/2022_03_11/qr_codes_for_subfolder')
 
 # add_dummy_reports_('D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code/549_16',
 #                    'D:/Shweta/data_digitization/sample_from_HR/report_types_added_qr_code/added_dummy_reports')

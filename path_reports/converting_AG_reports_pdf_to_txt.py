@@ -73,8 +73,8 @@ def convert_pdf_to_img_then_txt(pdf_folder_path, jpg_folder_path):
                     file1.close()
                 i += 1
 
-convert_pdf_to_img_then_txt("D:/Shweta/email/2022_03_01/AG/attachments",
-                            "D:/Shweta/email/2022_03_01/AG/img_txt")
+convert_pdf_to_img_then_txt("D:/Shweta/email/2022_03_03/AG/attchments",
+                            "D:/Shweta/email/2022_03_03/AG/img_txt")
 
 ##
 # file_name = '110_18_fnac_bx_ihc_2.jpg'
@@ -141,12 +141,11 @@ def extract_text_from_image(folder_path, txt_file_folder_path):
             file1.write(text)
             file1.close()
 
-txt_folder_path = "D:/Shweta/email/2022_03_01/AG/txt_files"
-extract_text_from_image("D:/Shweta/email/2022_03_01/AG/img_txt",
+txt_folder_path = "D:/Shweta/email/2022_03_03/AG/txt_files"
+extract_text_from_image("D:/Shweta/email/2022_03_03/AG/img_txt",
                          txt_folder_path)
 
 ###
-
 def convert_whole_pdf_to_img_then_txt(pdf_folder_path, jpg_folder_path):
     pdf_files = os.listdir(pdf_folder_path)
     for pdf_file in pdf_files:

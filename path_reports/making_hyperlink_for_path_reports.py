@@ -16,7 +16,7 @@ def get_pdf_path_and_convert_it_to_hyperlink(folder_path):
     df = pd.DataFrame(pdf_info_lst, columns=['file_name', 'hyperlink'])
     return df
 
-df = get_pdf_path_and_convert_it_to_hyperlink('Z:/Clinical_Database/Digitized_Files/Histopath/Surgery_path_reports_till_09_07_2021')
+df = get_pdf_path_and_convert_it_to_hyperlink('Z:/Clinical_Database/Digitized_Files/Histopath/all_AG_reports_year_wise')
 
-df.to_excel('Z:/Clinical_Database/Digitized_Files/Histopath/Surgery_path_reports_till_09_07_2021/2021_11_03_sx_path_report_info_with_hyperlink_sk.xlsx',
+df.to_excel('Z:/Clinical_Database/Digitized_Files/Histopath/all_AG_reports_year_wise/2022_03_04_AG_report_info_with_hyperlink_sk.xlsx',
             index=False)

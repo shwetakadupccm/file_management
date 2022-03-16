@@ -47,15 +47,16 @@ for num in data[0].split():
                 fp.close()
                 print('done')
 
-def download_email_attachment(username, password, download_attach_from = '',year = 2021, month = 10, day = 1,
+def download_email_attachment(username, password, download_attach_from = '', year = 2021, month = 10, day = 1,
                               attachments_output_folder_path = ''):
+
     mail = imaplib.IMAP4_SSL(host='imap.gmail.com', port=993)
     mail.login(username, password)
     mail.select('Inbox')
     info = []
     start_date = datetime.date(year, month, day).strftime('%d-%b-%Y')
-    type, data = mail.search(None, '(FROM ' + '"' + download_attach_from + '"' +')',
-                                 '(SENTSINCE ' + '"' + start_date + '"' + ')')
+    type, data = mail.search(None, '(FROM ' + '"' + download_attach_from + '"' +')', '(SENTSINCE ' + '"' + start_date + '"' + ')')
+
     for num in data[0].split():
         typ, data = mail.fetch(num, '(RFC822)')
         raw_email = data[0][1]
@@ -67,26 +68,24 @@ def download_email_attachment(username, password, download_attach_from = '',year
                 continue
             if part.get('Content-Disposition') is None:
                 continue
-            fileName = part.get_filename()
-            print(fileName)
-            if bool(fileName):
-                filePath = os.path.join(attachments_output_folder_path, fileName)
-                if not os.path.isfile(filePath):
+            file_name = part.get_filename()
+            if bool(file_name):
+                file_path = os.path.join(attachments_output_folder_path, file_name)
+                if not os.path.isfile(file_path):
                     try:
-                        fp = open(filePath, 'wb')
+                        fp = open(file_path, 'wb')
                         fp.write(part.get_payload(decode=True))
                         fp.close()
                     except OSError:
                         print('OS-error')
                     subject = str(email_message).split("Subject: ", 1)[1].split("\nTo:", 1)[0]
-                    file_name_subject = [fileName, subject]
+                    file_name_subject = [file_name, subject]
                     info.append(file_name_subject)
-                    print('done')
     df = pd.DataFrame(info, columns=['attchment_name', 'subject'])
     return df
 
-df = download_email_attachment(user, password, download_attach_from = 'info@agdiagnostics.com', year = 2021, month = 9, day = 1,
-                attachments_output_folder_path = "D:/Shweta/email/2022_03_01/AG/attachments")
+df = download_email_attachment(user, password, download_attach_from = 'labreports@rubyhall.com', year = 2021, month = 12, day = 30,
+                attachments_output_folder_path = "D:/Shweta/email/2022_03_03/Ruby_hall/attachments")
 
 #                 subject = str(email_message).split("Subject: ", 1)[1].split("\nTo:", 1)[0]
 #                 print('Downloaded "{file}" from email titled "{subject}" with UID {uid}.'.format(file=fileName,
