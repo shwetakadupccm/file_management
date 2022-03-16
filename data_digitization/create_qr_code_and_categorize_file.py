@@ -12,6 +12,7 @@ import pytesseract as pt
 # from PIL import Image
 from pdf2image import convert_from_path
 import shutil
+from docx2pdf import convert
 pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
 root = 'D:/Shweta/data_digitization'
@@ -75,7 +76,16 @@ def add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, p
     coded_data = os.path.join(tmp_folder_path, 'coded_data')
     if not os.path.isdir(coded_data):
         os.mkdir(coded_data)
-    doc.save(os.path.join(coded_data, doc_name))
+    doc_path = os.path.join(coded_data, doc_name)
+    doc.save(doc_path)
+    return doc_path
+
+def convert_doc_to_pdf(doc_path):
+    pdf_path = re.sub('.docx', '.pdf', str(doc_path))
+    convert(doc_path, pdf_path)
+    return pdf_path
+
+pdf_path = convert_doc_to_pdf('D:/Shweta/data_digitization/sample_output/2022_03_15/coded_data/38_10_302_01_patient_information.docx')
 
 # add_qr_code_in_word_doc(report_type = 'patient_information',
 #                 qr_code_path = 'D:/Shweta/data_digitization/sample_output/2022_03_14/qr_codes/38_10_302_01_patient_information.png'
@@ -176,7 +186,7 @@ classify_file_images_by_report_types('D:/Shweta/data_digitization/scanned_patien
                                      '2;47;48;50|52;54;55', '38_10', '01_patient_information',
                                      'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/categorized_imgs')
 
-def rename_images(dir_path, file_no, report_type, destination_path):
+def rename_images(pdf_doc_path, dir_path, file_no, report_type, destination_path):
     report_dir = os.path.join(dir_path, str(report_type))
     img_list = os.listdir(report_dir)
     for index, img in enumerate(img_list):
@@ -191,9 +201,11 @@ def rename_images(dir_path, file_no, report_type, destination_path):
             os.mkdir(new_file_path)
         dest_path = os.path.join(new_file_path, new_name)
         shutil.copy(old_file_path, dest_path)
+        coded_file_name = 'code_' + str(file_no) + '_' + str(report_type) + '.pdf'
+        shutil.copy(pdf_doc_path, os.path.join(new_file_path, coded_file_name))
         print('report_renamed')
 
-rename_images('D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/categorized_imgs/38_10',
+rename_images(pdf_path, 'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/categorized_imgs/38_10',
               '38_10', '01_patient_information',
               'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/classified_and_renamed')
 
@@ -208,15 +220,6 @@ def categorize_file_by_report_types(report_names_df, categorized_files_df, split
         patient_name = categorized_files_df['patient_name'][i]
         dob = categorized_files_df['date_of_birth'][i]
         print(file_number, mr_number, patient_name, dob)
-        # splitted_file_path = os.path.join(tmp_folder_path, 'splitted_files')
-        # if not os.path.isdir(splitted_file_path):
-        #     os.mkdir(splitted_file_path)
-        # subfolder_name = str(file_number)
-        # splitted_file_subfolder = os.path.join(splitted_file_path, subfolder_name)
-        # if not os.path.isdir(splitted_file_subfolder):
-        #     os.mkdir(splitted_file_subfolder)
-        # split_pdf_by_images(file_number, scanned_files_path, splitted_file_subfolder)
-        # print('done')
         for report_type in report_names_df['report_number_and_type']:
             print(report_type)
             qr_code_dir = os.path.join(tmp_folder_path, 'qr_codes')
@@ -227,8 +230,9 @@ def categorize_file_by_report_types(report_names_df, categorized_files_df, split
             if not os.path.isdir(coded_data_dir):
                 os.mkdir(coded_data_dir)
             qr_code_path = os.path.join(qr_code_dir, qr_img_name)
-            add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, patient_name, dob,
+            coded_doc_path = add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, patient_name, dob,
                                     tmp_folder_path)
+            coded_pdf_path = convert_doc_to_pdf(coded_doc_path)
             report_type_str = re.sub(' ', '_', str(report_type))
             report_page_nums = categorized_files_df[report_type_str][i]
             splitted_images_for_file_no = os.path.join(splitted_files_path, str(file_number))

@@ -11,6 +11,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 import pytesseract as pt
 from pdf2image import convert_from_path
 import shutil
+from docx2pdf import convert
 
 pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
@@ -80,12 +81,19 @@ class DataDigitization():
         coded_data = os.path.join(self.tmp_folder_path, 'coded_data')
         if not os.path.isdir(coded_data):
             os.mkdir(coded_data)
-        doc.save(os.path.join(coded_data, doc_name))
+        doc_path = os.path.join(coded_data, doc_name)
+        doc.save(doc_path)
+        return doc_path
+
+    @staticmethod
+    def convert_doc_to_pdf(doc_path):
+        pdf_path = re.sub('.docx', '.pdf', str(doc_path))
+        convert(doc_path, pdf_path)
+        return pdf_path
 
     def split_pdf_by_images(self):
         scanned_files = os.listdir(self.scanned_patient_file_path)
         for scanned_file in scanned_files:
-            print(scanned_file)
             scanned_file = scanned_file.lower()
             file_num = re.sub('[^0-9_]', '', scanned_file)
             splitted_file_path = os.path.join(self.scanned_files_spllited_path, file_num)
@@ -182,7 +190,7 @@ class DataDigitization():
                 shutil.copy(source_path, dest_path)
 
     @staticmethod
-    def rename_images(dir_path, file_no, report_type, destination_path):
+    def rename_images(pdf_doc_path, dir_path, file_no, report_type, destination_path):
         report_dir = os.path.join(dir_path, str(report_type))
         img_list = os.listdir(report_dir)
         for index, img in enumerate(img_list):
@@ -197,6 +205,8 @@ class DataDigitization():
                 os.mkdir(new_file_path)
             dest_path = os.path.join(new_file_path, new_name)
             shutil.copy(old_file_path, dest_path)
+            coded_file_name = 'code_' + str(file_no) + '_' + str(report_type) + '.pdf'
+            shutil.copy(pdf_doc_path, os.path.join(new_file_path, coded_file_name))
 
     def categorize_file_by_report_types(self):
         for i in range(len(self.categorized_files_df)):
@@ -213,7 +223,8 @@ class DataDigitization():
                 if not os.path.isdir(coded_data_dir):
                     os.mkdir(coded_data_dir)
                 qr_code_path = os.path.join(qr_code_dir, qr_img_name)
-                self.add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, patient_name, dob)
+                coded_doc_path = self.add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, patient_name, dob)
+                coded_pdf_path = self.convert_doc_to_pdf(coded_doc_path)
                 report_type_str = re.sub(' ', '_', str(report_type))
                 report_page_nums = self.categorized_files_df[report_type_str][i]
                 splitted_images_for_file_no = os.path.join(self.scanned_files_spllited_path, str(file_number))
@@ -223,7 +234,6 @@ class DataDigitization():
                 self.classify_file_images_by_report_types(splitted_images_for_file_no, str(report_page_nums), file_number, report_type_str,
                                                           classified_files_path)
                 renamed_files_path = os.path.join(classified_files_path, str(file_number))
-                self.rename_images(renamed_files_path, str(file_number), report_type_str, self.destination_path)
+                self.rename_images(coded_pdf_path, renamed_files_path, str(file_number), report_type_str, self.destination_path)
                 print('file: ' + file_number + ' classified by report types and arranged by sequence')
-
 
