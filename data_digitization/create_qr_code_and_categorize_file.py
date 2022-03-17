@@ -97,14 +97,13 @@ def convert_doc_to_pdf(doc_path):
     return pdf_path
 
 
-pdf_path = convert_doc_to_pdf(
-    'D:/Shweta/data_digitization/sample_output/2022_03_15/coded_data/38_10_302_01_patient_information.docx')
+# pdf_path = convert_doc_to_pdf(
+#     'D:/Shweta/data_digitization/sample_output/2022_03_15/coded_data/38_10_302_01_patient_information.docx')
 
 # add_qr_code_in_word_doc(report_type = 'patient_information',
 #                 qr_code_path = 'D:/Shweta/data_digitization/sample_output/2022_03_14/qr_codes/38_10_302_01_patient_information.png'
 #                         , file_number = '12_13', mr_number = '1213', patient_name='xyz', dob='dmy',
 #                         tmp_folder_path = 'D:/Shweta/data_digitization/sample_output/2022_03_14')
-
 
 def split_pdf_to_pages(file_number, scanned_files_path, splitted_file_path):
     pdf_file_name = str(file_number) + '.pdf'
@@ -136,7 +135,6 @@ def get_image_no(file_number, file_images_lst):
         file_image_no = file_image_no.strip()
         file_images_no_lst.append(file_image_no)
     return file_images_no_lst
-
 
 def split_report_page_no(report_page_no):
     if isinstance(report_page_no, float):

@@ -16,7 +16,6 @@ from docx2pdf import convert
 
 pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
-
 class DataDigitization():
 
     def __init__(self, root, tmp_folder_path, destination_path):
@@ -106,34 +105,27 @@ class DataDigitization():
         convert(doc_path, pdf_path)
         return pdf_path
 
-    def split_pdf_by_images(self):
-        scanned_files = os.listdir(self.scanned_patient_file_path)
-        for scanned_file in scanned_files:
-            scanned_file = scanned_file.lower()
-            file_num = re.sub('[^0-9_]', '', scanned_file)
-            split_file_path = os.path.join(
-                self.scanned_files_split_path, 'split_pdf.pdf')
-            if not os.path.isdir(split_file_path):
-                os.mkdir(split_file_path)
-            if scanned_file.endswith('.pdf'):
-                scan_file = PdfFileReader(scanned_file)
-                page_range = scan_file.getNumPages()
-                for i in range(page_range-1):
-                    page = scan_file.getPage(i)
-                    output_file = 'split_pdf_' + str(i) + '.pdf'
-                    pdf_writer = PdfFileWriter()
-                    pdf_writer.addPage(page)
-                    with open(os.path.join(split_file_path),
-                              'wb') as out:
-                        pdf_writer.write(out)
-                print("file number: ", file_num + " split")
+    @staticmethod
+    def split_pdf_by_pages(file_number, scanned_files_path, splitted_file_path):
+        pdf_file_name = str(file_number) + '.pdf'
+        scanned_file = PdfFileReader(os.path.join(scanned_files_path, pdf_file_name))
+        page_range = scanned_file.getNumPages()
+        for i in range(page_range):
+            page = scanned_file.getPage(i)
+            page_no = i + 1
+            splitted_file = str(file_number) + '_' + str(page_no) + '.pdf'
+            pdf_writer = PdfFileWriter()
+            pdf_writer.addPage(page)
+            with open(os.path.join(splitted_file_path, splitted_file), 'wb') as out:
+                pdf_writer.write(out)
+        print("file number: ", file_number + " splitted")
 
     @staticmethod
     def get_image_no(file_number, file_images_lst):
         file_images_no_lst = []
         for file_image in file_images_lst:
             file_image_no = re.sub(file_number, '', str(file_image))
-            file_image_no = re.sub('.jpg', '', file_image_no)
+            file_image_no = re.sub('.pdf', '', file_image_no)
             file_image_no = re.sub('_', '', file_image_no)
             file_image_no = file_image_no.strip()
             file_images_no_lst.append(file_image_no)
@@ -187,7 +179,8 @@ class DataDigitization():
             return page_no_lst
 
     @classmethod
-    def classify_file_images_by_report_types(self, splitted_file_path_file_no, report_page_nums, file_number, report_type, destination_path):
+    def classify_file_images_by_report_types(self, splitted_file_path_file_no, report_page_nums, file_number,
+                                             report_type, destination_path):
         splitted_scanned_files = os.listdir(splitted_file_path_file_no)
         img_no_lst = self.get_image_no(file_number, splitted_scanned_files)
         report_page_no_splitted = self.split_report_page_no(report_page_nums)
@@ -200,7 +193,7 @@ class DataDigitization():
         for page_no in report_page_no_splitted:
             if page_no in img_no_lst:
                 report_page_name = str(file_number) + \
-                    '_' + str(page_no) + '.jpg'
+                    '_' + str(page_no) + '.pdf'
                 source_path = os.path.join(
                     splitted_file_path_file_no, report_page_name)
                 dest_path = os.path.join(report_dir, report_page_name)
@@ -213,7 +206,7 @@ class DataDigitization():
         for index, img in enumerate(img_list):
             old_file_path = os.path.join(report_dir, img)
             img_no = index + 1
-            new_name = str(file_no) + '_' + str(img_no) + '.jpg'
+            new_name = str(file_no) + '_' + str(img_no) + '.pdf'
             file_dir = os.path.join(destination_path, str(file_no))
             if not os.path.isdir(file_dir):
                 os.mkdir(file_dir)
@@ -233,6 +226,13 @@ class DataDigitization():
             mr_number = self.categorized_files_df['mr_number'][i]
             patient_name = self.categorized_files_df['patient_name'][i]
             dob = self.categorized_files_df['date_of_birth'][i]
+            splitted_files_dir = os.path.join(self.tmp_folder_path, 'splitted_files')
+            if not os.path.isdir(splitted_files_dir):
+                os.mkdir(splitted_files_dir)
+            splitted_file_dir = os.path.join(splitted_files_dir, str(file_number))
+            if not os.path.isdir(splitted_file_dir):
+                os.mkdir(splitted_file_dir)
+            self.split_pdf_by_pages(str(file_number), self.scanned_patient_file_path, splitted_file_dir)
             for report_type in self.report_names_df['report_number_and_type']:
                 qr_code_dir = os.path.join(self.tmp_folder_path, 'qr_codes')
                 if not os.path.isdir(qr_code_dir):
@@ -250,13 +250,11 @@ class DataDigitization():
                 coded_pdf_path = self.convert_doc_to_pdf(coded_doc_path)
                 report_type_str = re.sub(' ', '_', str(report_type))
                 report_page_nums = self.categorized_files_df[report_type_str][i]
-                split_images_for_file_no = os.path.join(
-                    self.scanned_files_split_path, str(file_number))
                 classified_files_path = os.path.join(
                     self.tmp_folder_path, 'classfied_files')
                 if not os.path.isdir(classified_files_path):
                     os.mkdir(classified_files_path)
-                self.classify_file_images_by_report_types(split_images_for_file_no, str(
+                self.classify_file_images_by_report_types(splitted_file_dir, str(
                     report_page_nums), file_number, report_type_str, classified_files_path)
                 renamed_files_path = os.path.join(
                     classified_files_path, str(file_number))
