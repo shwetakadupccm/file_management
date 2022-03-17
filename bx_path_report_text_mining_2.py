@@ -11,21 +11,22 @@ from io import StringIO
 folder_path = 'D:\\Shweta\\path_reports\\Histopath_reports_from_server\\Biopsy'
 file_name = '110_18_FNAC_Bx_IHC.pdf'
 
+
 def convert_pdf_to_txt(path):
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
     # codec = 'utf-8' codec=codec
-    laparams = LAParams(char_margin = 20)
+    laparams = LAParams(char_margin=20)
     device = TextConverter(rsrcmgr, retstr, laparams=laparams)
     file = open(path, 'rb')
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
     maxpages = 0
     caching = True
-    pagenos=set()
+    pagenos = set()
 
-    for page in PDFPage.get_pages(file, pagenos, maxpages = maxpages, password = password, caching = caching,
-                                  check_extractable = True):
+    for page in PDFPage.get_pages(file, pagenos, maxpages=maxpages, password=password, caching=caching,
+                                  check_extractable=True):
         interpreter.process_page(page)
 
     text = retstr.getvalue()
@@ -35,7 +36,9 @@ def convert_pdf_to_txt(path):
     retstr.close()
     return text
 
+
 text = convert_pdf_to_txt(os.path.join(folder_path, file_name))
+
 
 def split_text_page_wise(path):
     text = convert_pdf_to_txt(path)
@@ -45,7 +48,9 @@ def split_text_page_wise(path):
     cleaned_text = re.split('//', cleaned_text)
     return cleaned_text
 
+
 spllited_text = split_text_page_wise(os.path.join(folder_path, file_name))
+
 
 def get_file_text_into_lst(path):
     text = convert_pdf_to_txt(path)
@@ -56,16 +61,6 @@ def get_file_text_into_lst(path):
     text1 = re.split('//', text1)
     return text1
 
-def clean_text_page_wise(splitted_text_page_wise):
-    page_wise_text = []
-    for page_text in splitted_text_page_wise:
-        text = page_text.replace('\n', '//')
-        text = text.replace(':', '//')
-        text = text.replace('.', '//')
-        text = text.lower()
-        text = re.split('//', text)
-        page_wise_text.append(', '.join([str(info) for info in text]))
-    return page_wise_text
 
 def clean_text_page_wise(splitted_text_page_wise):
     page_wise_text = []
@@ -77,8 +72,22 @@ def clean_text_page_wise(splitted_text_page_wise):
         text = re.split('//', text)
         page_wise_text.append(', '.join([str(info) for info in text]))
     return page_wise_text
+
+
+def clean_text_page_wise(splitted_text_page_wise):
+    page_wise_text = []
+    for page_text in splitted_text_page_wise:
+        text = page_text.replace('\n', '//')
+        text = text.replace(':', '//')
+        text = text.replace('.', '//')
+        text = text.lower()
+        text = re.split('//', text)
+        page_wise_text.append(', '.join([str(info) for info in text]))
+    return page_wise_text
+
 
 page_wise_text = clean_text_page_wise(spllited_text)
+
 
 def get_patient_name(file_text_lst):
     patient_name = file_text_lst[0]
@@ -87,7 +96,8 @@ def get_patient_name(file_text_lst):
     cleaned_patient_name = cleaned_patient_name.replace('_', '')
     return cleaned_patient_name
 
-def get_sid(file_text_lst, sid_keyword = 'sid'):
+
+def get_sid(file_text_lst, sid_keyword='sid'):
     try:
         sid_index = file_text_lst.index(sid_keyword)
         sid = file_text_lst[sid_index + 1]
@@ -95,19 +105,22 @@ def get_sid(file_text_lst, sid_keyword = 'sid'):
     except ValueError:
         return None
 
+
 def get_bx_date(file_text_lst):
     for line in file_text_lst:
-        match = re.search('\d{2}-\d{2}-\d{4}', line)
+        match = re.search('/d{2}-/d{2}-/d{4}', line)
         if match is not None:
             date = datetime.datetime.strptime(match.group(), '%d-%m-%Y').date()
             return date
 
-def get_keyword_info(file_text_lst, keyword = ['her-2']):
+
+def get_keyword_info(file_text_lst, keyword=['her-2']):
     keyword_info = []
     for line in file_text_lst:
         if any(x in line for x in keyword):
             keyword_info.append(line)
     return keyword_info
+
 
 def get_her2_status_grade(text_lst, her2_keyword='c-erbb-2 (her-2/neu) assay'):
     if her2_keyword in text_lst:
@@ -118,6 +131,7 @@ def get_her2_status_grade(text_lst, her2_keyword='c-erbb-2 (her-2/neu) assay'):
                 return her2_status_stat
             elif her2_status_stat.endswith('al'):
                 return her2_status_stat
+
 
 def get_unique_value_from_list(list_with_duplicate_values):
     unique_list = []
@@ -141,7 +155,8 @@ def get_unique_value_from_list(list_with_duplicate_values):
 #         immunohistochemistry.append('Yes')
 #     return specimen_info_unique, cytology, histology, immunohistochemistry
 
-def get_er_status(keyword_info, keyword_for_er_status = ['allred score', 'quick score']):
+
+def get_er_status(keyword_info, keyword_for_er_status=['allred score', 'quick score']):
     if keyword_info is not None:
         for line in keyword_info:
             if any(x in line for x in keyword_for_er_status):
@@ -153,6 +168,7 @@ def get_er_status(keyword_info, keyword_for_er_status = ['allred score', 'quick 
                     return er_status
                 except TypeError:
                     return None
+
 
 def get_pr_status(keyword_info):
     if keyword_info is not None:
@@ -166,7 +182,8 @@ def get_pr_status(keyword_info):
                 except TypeError:
                     return None
 
-def get_tils_status(keyword_info, tils_status_types = ['moderate', 'mild', 'marked']):
+
+def get_tils_status(keyword_info, tils_status_types=['moderate', 'mild', 'marked']):
     for line in keyword_info:
         if any(x in line for x in tils_status_types):
             split_line = line.split(' ')
@@ -174,14 +191,14 @@ def get_tils_status(keyword_info, tils_status_types = ['moderate', 'mild', 'mark
                 if any(x in word for x in tils_status_types):
                     return word
 
+
 def get_identifing_info_from_report(page_text):
     patient_name = get_patient_name(page_text)
 
 
-
-def get_keyword_information_from_report(folder_path, er_pr_keyword = ['positive/negative'], sid_keyword = 'sid',
-                                        her2_keyword = 'c-erbb-2 (her-2/neu) assay', tils_keyword = ['infiltration', 'stroma'],
-                                        tils_status_types = ['moderate', 'mild', 'marked'], specimen_keyword=['specimen', 'block', 'fnac', 'biopsy']):
+def get_keyword_information_from_report(folder_path, er_pr_keyword=['positive/negative'], sid_keyword='sid',
+                                        her2_keyword='c-erbb-2 (her-2/neu) assay', tils_keyword=['infiltration', 'stroma'],
+                                        tils_status_types=['moderate', 'mild', 'marked'], specimen_keyword=['specimen', 'block', 'fnac', 'biopsy']):
     file_names = os.listdir(folder_path)
     sids1 = []
     patient_names1 = []
@@ -223,20 +240,24 @@ def get_keyword_information_from_report(folder_path, er_pr_keyword = ['positive/
                 bx_dates.append(bx_date)
                 er_info = get_keyword_info(page_text, er_pr_keyword)
                 er_info_unique = get_unique_value_from_list(er_info)
-                er_keyword_info.append('; '.join([str(info) for info in er_info_unique]))
+                er_keyword_info.append(
+                    '; '.join([str(info) for info in er_info_unique]))
                 er_status = get_er_status(er_info_unique)
                 er_status_lst.append(er_status)
                 pr_info = get_keyword_info(page_text, er_pr_keyword)
                 pr_info_unique = get_unique_value_from_list(pr_info)
-                pr_keyword_info.append('; '.join([str(info) for info in pr_info_unique]))
+                pr_keyword_info.append(
+                    '; '.join([str(info) for info in pr_info_unique]))
                 pr_status = get_pr_status(pr_info_unique)
                 pr_status_lst.append(pr_status)
                 her2_status = get_her2_status_grade(page_text, her2_keyword)
                 her2_status_lst.append(her2_status)
                 tils_info = get_keyword_info(page_text, tils_keyword)
                 tils_info_unique = get_unique_value_from_list(tils_info)
-                tils_info_lst.append('; '.join([str(info) for info in tils_info_unique]))
-                tils_status = get_tils_status(tils_info_unique, tils_status_types)
+                tils_info_lst.append(
+                    '; '.join([str(info) for info in tils_info_unique]))
+                tils_status = get_tils_status(
+                    tils_info_unique, tils_status_types)
                 tils_status_lst.append(tils_status)
             patient_names1.append(patient_names)
             bx_dates1.append(bx_dates)
@@ -264,7 +285,7 @@ def get_keyword_information_from_report(folder_path, er_pr_keyword = ['positive/
     return output_df
 
 
-df = get_keyword_information_from_report(folder_path, er_pr_keyword = ['positive/negative'],
-                                         her2_keyword = 'c-erbb-2 (her-2/neu) assay', sid_keyword = 'sid',
-                                         tils_keyword=['infiltration', 'stroma'], tils_status_types = ['moderate', 'mild', 'marked', 'moderat e'],
+df = get_keyword_information_from_report(folder_path, er_pr_keyword=['positive/negative'],
+                                         her2_keyword='c-erbb-2 (her-2/neu) assay', sid_keyword='sid',
+                                         tils_keyword=['infiltration', 'stroma'], tils_status_types=['moderate', 'mild', 'marked', 'moderat e'],
                                          specimen_keyword=['specimen', 'block', 'fnac', 'biopsy'])

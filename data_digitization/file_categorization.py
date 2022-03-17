@@ -1,8 +1,9 @@
-import pandas as pd
-import numpy as np
+import shutil
 import math
 import os
 import re
+import pandas as pd
+import numpy as np
 import pyqrcode
 from docx import Document
 from docx.shared import Pt
@@ -10,39 +11,52 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 import pytesseract as pt
 from pdf2image import convert_from_path
-import shutil
+from PyPDF2 import PdfFileReader, PdfFileWriter
 from docx2pdf import convert
 
 pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
+
 class DataDigitization():
+
     def __init__(self, root, tmp_folder_path, destination_path):
         self.root = root
         self.tmp_folder_path = tmp_folder_path
-        self.report_names_df = pd.read_excel(os.path.join(self.root, 'reference_docs/Report_types_17.xlsx'))
-        self.categorized_files_df = pd.read_excel(os.path.join(self.root, 'reference_docs/2022_02_09_Data_digitzation_scanned_files_dk.xlsx'))
+        self.report_names_df = pd.read_excel(os.path.join(
+            self.root, 'reference_docs/Report_types_17.xlsx'))
+        self.categorized_files_df = pd.read_excel(os.path.join(
+            self.root, 'reference_docs/',
+            '2022_02_09_Data_digitzation_scanned_files_dk.xlsx'))
         self.tmp_folder_path = tmp_folder_path
-        self.scanned_patient_file_path = os.path.join(self.root, 'scanned_patient_files/2022_03_14/original_pdf')
-        self.scanned_files_spllited_path = os.path.join(self.root, 'scanned_patient_files/2022_03_15/splitted_pdf')
-        self.categorized_files_path = os.path.join(self.root, 'sample_output/2022_03_14/categorized_files_path')
+        self.scanned_patient_file_path = os.path.join(
+            self.root, 'scanned_patient_files/2022_03_14/original_pdf')
+        self.scanned_files_split_path = os.path.join(
+            self.root, 'scanned_patient_files/2022_03_15')
+        self.categorized_files_path = os.path.join(
+            self.root, 'sample_output/2022_03_14/categorized_files_path')
         self.destination_path = destination_path
 
     @staticmethod
     def make_qr_code(file_number, mr_number, report_type, subfolder, destination):
-        file_number_str = re.sub('_', '/', str(file_number))
+        file_number_str = re.sub('_', '/',
+                                 str(file_number))
         if subfolder is not None:
-            qr_code = file_number_str + '_' + str(mr_number) + '_' + str(report_type) + '_' + str(subfolder)
+            qr_code = file_number_str + '_' + \
+                str(mr_number) + '_' + str(report_type) + '_' + str(subfolder)
         else:
-            qr_code = file_number_str + '_' + str(mr_number) + '_' + str(report_type)
+            qr_code = file_number_str + '_' + \
+                str(mr_number) + '_' + str(report_type)
         qr = pyqrcode.create(qr_code)
         report_type_for_name = re.sub(' ', '_', str(report_type))
-        qr_img_name = file_number + '_' + str(mr_number) + '_' + report_type_for_name + '.png'
+        qr_img_name = file_number + '_' + \
+            str(mr_number) + '_' + report_type_for_name + '.png'
         qr_path = os.path.join(destination, qr_img_name)
         qr.png(qr_path, scale=4)
         print('QR code created for ' + file_number + ' ' + report_type + ' ')
         return qr_img_name
 
-    def add_qr_code_in_word_doc(self, report_type, qr_code_path, file_number, mr_number, patient_name, dob):
+    def add_qr_code_in_word_doc(self, report_type, qr_code_path, file_number, mr_number,
+                                patient_name, dob):
         doc = Document()
         doc.add_picture(qr_code_path)
         last_paragraph = doc.paragraphs[-1]
@@ -50,7 +64,7 @@ class DataDigitization():
         type = report_type
         text = doc.add_paragraph()
         report_type_name = text.add_run(str(type))
-        report_type_name.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+        report_type_name.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY  # type: ignore
         report_type_name.bold = True
         report_type_name.font.size = Pt(28)
         report_type_name.font.name = 'Arial Black'
@@ -60,7 +74,7 @@ class DataDigitization():
         file_number_str = re.sub('_', '/', str(file_number))
         file_no = 'File Number: ' + str(file_number_str)
         id = doc.add_paragraph().add_run(file_no)
-        id.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        id.alignment = WD_ALIGN_PARAGRAPH.CENTER
         id.font.size = Pt(20)
         id.font.name = 'Arial Black'
         mr_no = 'MR Number: ' + str(mr_number)
@@ -77,7 +91,8 @@ class DataDigitization():
         id.font.name = 'Arial Black'
         report_type = re.sub(' ', '_', report_type)
         report_type = report_type.lower()
-        doc_name = str(file_number) + '_' + str(mr_number) + '_' + str(report_type) + '.docx'
+        doc_name = str(file_number) + '_' + str(mr_number) + \
+            '_' + str(report_type) + '.docx'
         coded_data = os.path.join(self.tmp_folder_path, 'coded_data')
         if not os.path.isdir(coded_data):
             os.mkdir(coded_data)
@@ -96,21 +111,21 @@ class DataDigitization():
         for scanned_file in scanned_files:
             scanned_file = scanned_file.lower()
             file_num = re.sub('[^0-9_]', '', scanned_file)
-            splitted_file_path = os.path.join(self.scanned_files_spllited_path, file_num)
-            if not os.path.isdir(splitted_file_path):
-                os.mkdir(splitted_file_path)
+            split_file_path = os.path.join(
+                self.scanned_files_split_path, 'split_pdf.pdf')
+            if not os.path.isdir(split_file_path):
+                os.mkdir(split_file_path)
             if scanned_file.endswith('.pdf'):
-                pages = convert_from_path(os.path.join(self.scanned_patient_file_path, scanned_file), 500,
-                                          poppler_path='C:/Program Files/poppler-0.68.0/bin')
-                i = 0
-                for index, page in enumerate(pages):
-                    if i == index:
-                        file_name = scanned_file.lower()
-                        file_name = re.sub('.pdf', '', file_name)
-                        page_no = i + 1
-                        out_jpg = file_name + '_' + str(page_no) + '.jpg'
-                        page.save(os.path.join(splitted_file_path, out_jpg), 'JPEG')
-                    i += 1
+                scan_file = PdfFileReader(scanned_file)
+                page_range = scan_file.getNumPages()
+                for i in range(page_range-1):
+                    page = scan_file.getPage(i)
+                    output_file = 'split_pdf_' + str(i) + '.pdf'
+                    pdf_writer = PdfFileWriter()
+                    pdf_writer.addPage(page)
+                    with open(os.path.join(split_file_path),
+                              'wb') as out:
+                        pdf_writer.write(out)
                 print("file number: ", file_num + " split")
 
     @staticmethod
@@ -184,8 +199,10 @@ class DataDigitization():
             os.mkdir(report_dir)
         for page_no in report_page_no_splitted:
             if page_no in img_no_lst:
-                report_page_name = str(file_number) + '_' + str(page_no) + '.jpg'
-                source_path = os.path.join(splitted_file_path_file_no, report_page_name)
+                report_page_name = str(file_number) + \
+                    '_' + str(page_no) + '.jpg'
+                source_path = os.path.join(
+                    splitted_file_path_file_no, report_page_name)
                 dest_path = os.path.join(report_dir, report_page_name)
                 shutil.copy(source_path, dest_path)
 
@@ -205,8 +222,10 @@ class DataDigitization():
                 os.mkdir(new_file_path)
             dest_path = os.path.join(new_file_path, new_name)
             shutil.copy(old_file_path, dest_path)
-            coded_file_name = 'code_' + str(file_no) + '_' + str(report_type) + '.pdf'
-            shutil.copy(pdf_doc_path, os.path.join(new_file_path, coded_file_name))
+            coded_file_name = 'code_' + \
+                str(file_no) + '_' + str(report_type) + '.pdf'
+            shutil.copy(pdf_doc_path, os.path.join(
+                new_file_path, coded_file_name))
 
     def categorize_file_by_report_types(self):
         for i in range(len(self.categorized_files_df)):
@@ -218,22 +237,30 @@ class DataDigitization():
                 qr_code_dir = os.path.join(self.tmp_folder_path, 'qr_codes')
                 if not os.path.isdir(qr_code_dir):
                     os.mkdir(qr_code_dir)
-                qr_img_name = self.make_qr_code(file_number, mr_number, report_type, None, qr_code_dir)
-                coded_data_dir = os.path.join(self.tmp_folder_path, 'coded_data')
+                qr_img_name = self.make_qr_code(
+                    file_number, mr_number, report_type, None, qr_code_dir)
+                coded_data_dir = os.path.join(
+                    self.tmp_folder_path, 'coded_data')
                 if not os.path.isdir(coded_data_dir):
                     os.mkdir(coded_data_dir)
                 qr_code_path = os.path.join(qr_code_dir, qr_img_name)
-                coded_doc_path = self.add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, patient_name, dob)
+                coded_doc_path = self.add_qr_code_in_word_doc(
+                    report_type, qr_code_path, file_number, mr_number,
+                    patient_name, dob)
                 coded_pdf_path = self.convert_doc_to_pdf(coded_doc_path)
                 report_type_str = re.sub(' ', '_', str(report_type))
                 report_page_nums = self.categorized_files_df[report_type_str][i]
-                splitted_images_for_file_no = os.path.join(self.scanned_files_spllited_path, str(file_number))
-                classified_files_path = os.path.join(self.tmp_folder_path, 'classfied_files')
+                split_images_for_file_no = os.path.join(
+                    self.scanned_files_split_path, str(file_number))
+                classified_files_path = os.path.join(
+                    self.tmp_folder_path, 'classfied_files')
                 if not os.path.isdir(classified_files_path):
                     os.mkdir(classified_files_path)
-                self.classify_file_images_by_report_types(splitted_images_for_file_no, str(report_page_nums), file_number, report_type_str,
-                                                          classified_files_path)
-                renamed_files_path = os.path.join(classified_files_path, str(file_number))
-                self.rename_images(coded_pdf_path, renamed_files_path, str(file_number), report_type_str, self.destination_path)
-                print('file: ' + file_number + ' classified by report types and arranged by sequence')
-
+                self.classify_file_images_by_report_types(split_images_for_file_no, str(
+                    report_page_nums), file_number, report_type_str, classified_files_path)
+                renamed_files_path = os.path.join(
+                    classified_files_path, str(file_number))
+                self.rename_images(coded_pdf_path, renamed_files_path, str(
+                    file_number), report_type_str, self.destination_path)
+                print("file: ", file_number,
+                      ' classified by report types and arranged by sequence')
